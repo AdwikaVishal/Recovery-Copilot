@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recovery Copilot — AI Revenue Recovery</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root{
+            --bg:#f7f8fa;
+            --surface:#ffffff;
+            --border:#e7e8ec;
+            --border-strong:#d9dbe2;
+            --ink:#1a1b22;
+            --ink-2:#4b4e5a;
+            --ink-3:#8a8d99;
+            --accent:#2457f5;
+            --accent-soft:#eef2fe;
+            --green:#168a50;
+            --green-soft:#e9f7f0;
+            --red:#cc4037;
+            --red-soft:#fdeceb;
+            --amber:#b06c06;
+            --amber-soft:#fdf3e2;
+            --blue:#1a66d6;
+            --blue-soft:#eaf2fd;
+            --radius:14px;
+            --radius-sm:9px;
+            --shadow:0 1px 2px rgba(20,24,40,.05);
+            --nav-w:232px;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+        ::selection{background:#2457f51f}
+
+        .shell{display:flex;min-height:100vh}
+        .nav{width:var(--nav-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:20px 14px}
+        .brand{display:flex;align-items:center;gap:11px;padding:2px 10px 20px}
+        .mark{width:34px;height:34px;border-radius:9px;background:#0b1f3a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;letter-spacing:-.5px}
+        .brand-name{font-size:15px;font-weight:700;letter-spacing:-.2px;line-height:1.15}
+        .brand-sub{font-size:11px;color:var(--ink-3);font-weight:500;margin-top:1px}
+        .nav-sec{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-3);padding:14px 12px 6px}
+        .nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:9px;margin-bottom:2px;color:var(--ink-2);font-weight:500;font-size:13.5px;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .12s,color .12s}
+        .nav-item:hover{background:#f2f3f6}
+        .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+        .nav-item.active .avi{color:var(--accent)}
+        .avi{width:17px;height:17px;color:var(--ink-3);flex-shrink:0}
+        .nav-item .count{margin-left:auto;font-size:11px;color:var(--ink-3);background:#f0f1f4;border-radius:12px;padding:1px 8px;font-weight:600}
+        .nav-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);font-size:10.5px;color:var(--ink-3);line-height:1.5}
+
+        .main{flex:1;min-width:0;max-width:1180px;margin:0 auto;padding:28px 34px 60px}
+        .topbar{display:flex;align-items:center;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+        .page-title{font-size:24px;font-weight:700;letter-spacing:-.4px;line-height:1.2}
+        .page-sub{font-size:13px;color:var(--ink-3);margin-top:4px}
+        .spacer{flex:1}
+        .badge{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid var(--border)}
+        .badge .dot{width:7px;height:7px;border-radius:50%}
+        .badge.live{color:var(--green);border-color:#cdebd9;background:var(--green-soft)}
+        .badge.live .dot{background:var(--green);animation:pulse 1.6s ease-in-out infinite}
+        .badge.warn{color:var(--amber);border-color:#f3ddb4;background:var(--amber-soft)}
+        .badge.warn .dot{background:var(--amber)}
+        .badge.neutral{color:var(--ink-2);background:var(--surface)}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+        .section{margin-bottom:30px}
+        .section-title{font-size:16px;font-weight:700;letter-spacing:-.2px;margin-bottom:4px}
+        .section-sub{font-size:12.5px;color:var(--ink-3);margin-bottom:16px}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px}
+        .card.tight{padding:16px 18px}
+
+        .hero-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+        .stat .k{font-size:11.5px;font-weight:600;color:var(--ink-3);letter-spacing:.2px;text-transform:uppercase}
+        .stat .v{font-size:30px;font-weight:700;letter-spacing:-.8px;margin-top:6px;line-height:1.05}
+        .stat .s{font-size:12px;color:var(--ink-3);margin-top:6px}
+        .accent-green .v{color:var(--green)}.accent-blue .v{color:var(--accent)}.accent-amber .v{color:var(--amber)}.accent-red .v{color:var(--red)}
+
+        .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+        .impact{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:22px}
+        .impact-col{text-align:center;padding:6px}
+        .impact-col .lbl{font-size:12px;color:var(--ink-3);font-weight:600;margin-bottom:8px}
+        .impact-col .big{font-size:34px;font-weight:700;letter-spacing:-1px}
+        .impact-col.win .big{color:var(--green)}
+        .impact-col.flat .big{color:var(--ink-2)}
+        .impact-col .note{font-size:12px;color:var(--ink-3);margin-top:6px}
+        .impact-divider{border-left:1px dashed var(--border-strong);height:88px}
+        .impact-gain{display:flex;flex-direction:column;align-items:center;gap:2px;justify-self:center}
+        .gain-num{font-size:20px;font-weight:700;color:var(--green)}
+        .gain-lbl{font-size:12px;color:var(--ink-3)}
+
+        .risk-row{display:flex;align-items:center;gap:14px;padding:10px 2px;border-bottom:1px solid var(--border)}
+        .risk-row:last-child{border-bottom:none}
+        .risk-name{width:200px;font-size:13px;font-weight:600;flex-shrink:0}
+        .risk-bar{flex:1;height:8px;background:#eef0f3;border-radius:99px;overflow:hidden}
+        .risk-bar i{display:block;height:100%;border-radius:99px;background:var(--accent);opacity:.85}
+        .risk-meta{width:190px;text-align:right;font-size:12px;color:var(--ink-3);flex-shrink:0}
+        .risk-meta b{color:var(--ink)}
+        .risk-total{font-size:26px;font-weight:700;letter-spacing:-.6px;margin-bottom:14px}
+        .risk-total small{display:block;font-size:12px;color:var(--ink-3);font-weight:500;letter-spacing:0;margin-top:3px}
+
+        .funnel{display:flex;flex-direction:column;align-items:stretch;gap:0}
+        .funnel-step{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:#fff}
+        .funnel-step .fl{font-size:12.5px;color:var(--ink-3);font-weight:500}
+        .funnel-step .fv{font-size:17px;font-weight:700}
+        .funnel-arrow{display:flex;justify-content:center;color:var(--ink-3);padding:2px 0}
+        .funnel-step.lg .fv{color:var(--green)}
+
+        .live-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+        .live-strip .lcell .k{font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+        .live-strip .lcell .v{font-size:22px;font-weight:700;margin-top:4px;letter-spacing:-.4px}
+
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);padding:8px 12px;border-bottom:1px solid var(--border-strong);white-space:nowrap}
+        td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+        tbody tr{cursor:pointer;transition:background .1s}
+        tbody tr:hover{background:#fafbff}
+        tr:last-child td{border-bottom:none}
+        .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+        .right{text-align:right}
+
+        .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+        .chip.ok{background:var(--green-soft);color:var(--green)}
+        .chip.bad{background:var(--red-soft);color:var(--red)}
+        .chip.warn{background:var(--amber-soft);color:var(--amber)}
+        .chip.info{background:var(--blue-soft);color:var(--blue)}
+        .chip.muted{background:#f1f2f5;color:var(--ink-2)}
+
+        .btn{border:1px solid var(--border-strong);background:#fff;color:var(--ink);padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:7px}
+        .btn:hover{border-color:#c4c7d1;background:#fafbfc}
+        .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+        .btn.primary:hover{background:#1d47d1}
+        .btn.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:6px 10px}
+        .btn.ghost:hover{background:var(--accent-soft)}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-row{display:flex;gap:10px;align-items:center}
+
+        .input{width:100%;border:1px solid var(--border-strong);border-radius:9px;padding:9px 12px;font-size:13px;outline:none;background:#fff;color:var(--ink);transition:border .12s}
+        .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #2457f51a}
+        .select{min-width:190px}
+        .num{width:120px}
+
+        .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+        .fbtn{padding:5px 13px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:#fff;color:var(--ink-2);cursor:pointer;transition:all .12s}
+        .fbtn:hover{border-color:var(--border-strong)}
+        .fbtn.on{background:#0b1f3a;border-color:#0b1f3a;color:#fff}
+
+        .gcell{padding:14px;border:1px solid var(--border);border-radius:11px;cursor:pointer;transition:all .12s}
+        .gcell:hover{border-color:var(--border-strong);box-shadow:var(--shadow)}
+        .gcell .gn{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+        .gcell .gc{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+
+        .step-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+        .step-row:last-child{border-bottom:none}
+        .step-ico{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700}
+        .step-ico.done{background:var(--green-soft);color:var(--green)}
+        .step-ico.wait{background:#f1f2f5;color:var(--ink-3)}
+        .step-ico.fail{background:var(--red-soft);color:var(--red)}
+        .step-ico.active{background:var(--blue-soft);color:var(--blue)}
+        .step-body{flex:1;min-width:0}
+        .step-title{font-size:13px;font-weight:600}
+        .step-detail{font-size:12px;color:var(--ink-3);margin-top:3px}
+        .step-time{font-size:11px;color:var(--ink-3);white-space:nowrap;margin-top:2px}
+
+        .trace-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+        .trace-tab{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--ink-2);transition:all .12s}
+        .trace-tab.active{background:#0b1f3a;border-color:#0b1f3a;color:#fff}
+
+        .check-row{display:flex;gap:10px;padding:7px 0;font-size:12.5px;align-items:flex-start}
+        .check-mark{flex-shrink:0;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+        .check-mark.pass{background:var(--green-soft);color:var(--green)}
+        .check-mark.fail{background:var(--red-soft);color:var(--red)}
+        .check-rule{font-weight:600;min-width:150px}
+        .check-exp{color:var(--ink-3)}
+
+        .verdict-box{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;margin-top:14px}
+        .verdict-box.allow{border-left-color:var(--green)}.verdict-box.deny{border-left-color:var(--red)}.verdict-box.modify{border-left-color:var(--amber)}.verdict-box.human{border-left-color:var(--amber)}
+
+        .answer{background:#f7f9fd;border:1px solid #dbe6fb;border-radius:10px;padding:13px 16px;font-size:13px;color:var(--ink-2);margin-bottom:14px;line-height:1.55}
+        .answer b{color:var(--accent)}
+
+        .accordion{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
+        .accordion-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:600}
+        .accordion-head:hover{background:#fafbfc}
+        .accordion-body{border-top:1px solid var(--border);padding:14px;background:#fcfcfd;font-size:12.5px}
+
+        .stream-item{display:flex;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--border);font-size:12.5px}
+        .stream-item:last-child{border-bottom:none}
+        .stream-t{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink-3);width:66px;flex-shrink:0}
+        .stream-type{font-weight:600;color:var(--ink);width:210px;flex-shrink:0}
+        .stream-detail{color:var(--ink-3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+        .empty{text-align:center;padding:36px 20px;color:var(--ink-3);font-size:13px;line-height:1.6}
+        .empty .eico{font-size:30px;margin-bottom:8px}
+        .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+        .kpi{padding:12px 14px;border:1px solid var(--border);border-radius:10px}
+        .kpi .k{font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+        .kpi .v{font-size:18px;font-weight:700;margin-top:3px}
+
+        .drawer-backdrop{position:fixed;inset:0;background:rgba(12,16,32,.34);z-index:40;animation:fade .18s ease}
+        .drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);background:#fff;z-index:41;box-shadow:-12px 0 40px rgba(12,16,32,.14);display:flex;flex-direction:column;animation:slide .22s ease}
+        @keyframes fade{from{opacity:0}to{opacity:1}}
+        @keyframes slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+        .drawer-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
+        .drawer-head .dh-id{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink-3);margin-top:4px}
+        .drawer-head .dh-amt{font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.4px}
+        .drawer-body{flex:1;overflow-y:auto;padding:6px 24px 30px}
+        .drawer-sec{margin-top:22px}
+        .drawer-sec h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);margin-bottom:10px}
+        .drawer-close{margin-left:auto;border:1px solid var(--border);background:#fff;color:var(--ink-2);width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:15px;flex-shrink:0;transition:all .12s}
+        .drawer-close:hover{border-color:var(--border-strong);background:#f6f7f9}
+
+        /* system health */
+        .health-wrap{position:relative;display:inline-flex}
+        .health-wrap>.badge{cursor:pointer}
+        .health-pop{position:absolute;right:0;top:calc(100% + 10px);width:296px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 14px 40px rgba(20,24,40,.14);padding:8px;z-index:60}
+        .health-pop:before{content:'';position:absolute;top:-5px;right:30px;width:10px;height:10px;background:var(--surface);border-left:1px solid var(--border);border-top:1px solid var(--border);transform:rotate(45deg)}
+        .health-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px}
+        .health-row:hover{background:#f7f8fa}
+        .health-right{margin-left:auto;text-align:right}
+        .health-right .hr-st{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.4px}
+        .health-right .hr-st.up{color:var(--green)}.health-right .hr-st.dn{color:var(--red)}
+        .health-right .hr-dt{font-size:10.5px;color:var(--ink-3);margin-top:1px}
+        .hdot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex-shrink:0}
+        .hdot.up{background:var(--green)}.hdot.dn{background:var(--red)}
+
+        /* pipeline stepper */
+        .stepper{display:flex;align-items:flex-start;overflow-x:auto;padding:10px 2px 4px}
+        .pstep{flex:1;display:flex;flex-direction:column;align-items:center;min-width:78px;max-width:120px;position:relative}
+        .pstep .sc{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:1.5px solid var(--border-strong);background:#fff;color:var(--ink-3);z-index:1;transition:all .15s}
+        .pstep.done .sc{background:var(--green-soft);border-color:#b3e3c6;color:var(--green)}
+        .pstep.act .sc{background:var(--blue-soft);border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 4px #1a66d61c}
+        .pstep.fail .sc{background:var(--red-soft);border-color:#f2c3c0;color:var(--red)}
+        .pstep .sl{font-size:9.5px;font-weight:700;color:var(--ink-3);margin-top:6px;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+        .pstep.done .sl{color:var(--green)}.pstep.act .sl{color:var(--blue)}.pstep.fail .sl{color:var(--red)}
+        .pstep .ln{position:absolute;top:15px;right:50%;width:100%;height:2px;background:var(--border-strong);z-index:0}
+        .pstep:first-child .ln{display:none}
+        .pstep.done .ln{background:#a9ddc0}
+        .pstep.act .ln{background:#a9ddc0}
+
+        /* AI decision card */
+        .dec-card{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+        .dec-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:#fafbfc}
+        .dec-head .dt{font-size:12px;color:var(--ink-3);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+        .dec-head .damt{font-size:21px;font-weight:700;letter-spacing:-.5px}
+        .dec-body{padding:2px 16px}
+        .dec-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+        .dec-row:last-child{border-bottom:none}
+        .dec-row .dk{color:var(--ink-3);font-size:12px}
+        .dec-row .dv{font-weight:600}
+        .dec-why{padding:11px 16px;background:#f7f9fd;border-top:1px solid var(--border);font-size:12.5px;color:var(--ink-2);line-height:1.65}
+        .dec-why b{color:var(--accent)}
+        .dec-cands{padding:0 16px 12px;border-top:1px dashed var(--border)}
+        .cand-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;border:1px solid transparent;font-size:12.5px}
+        .cand-row:nth-child(2){margin-top:6px}
+        .cand-row.elected{background:var(--blue-soft);border-color:#bcd3f6}
+        .cand-strategy{font-weight:600;color:var(--ink-2)}
+        .cand-meta{margin-left:auto;display:flex;align-items:center;gap:10px}
+        .cand-p{font-weight:700;color:var(--ink-2)}
+        .cand-ev{font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+        .cand-pick{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--blue);border:1px solid var(--blue);border-radius:99px;padding:1px 7px}
+        .dec-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--green-soft);border-top:1px solid #cdebd9}
+        .dec-foot .fv{font-size:19px;font-weight:700;color:var(--green)}
+        .dec-foot.pending{background:var(--amber-soft);border-top-color:#f3ddb4}
+        .dec-foot.pending .fv{color:var(--amber)}
+        .dec-foot.blocked{background:var(--red-soft);border-top-color:#f2c3c0}
+        .dec-foot.blocked .fv{color:var(--red)}
+
+        /* transaction trace drawer */
+        .trace-banner{display:flex;align-items:center;gap:12px;padding:13px 16px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+        .trace-banner .tb-r{margin-left:auto;font-weight:700;white-space:nowrap}
+        .trace-banner.ok{background:var(--green-soft);border-top:2px solid var(--green)}
+        .trace-banner.wait{background:var(--amber-soft);border-top:2px solid var(--amber)}
+        .trace-banner.no{background:var(--red-soft);border-top:2px solid var(--red)}
+        .trace-banner.ok .tb-r{color:var(--green)}
+        .trace-banner.wait .tb-r{color:var(--amber)}
+        .trace-banner.no .tb-r{color:var(--red)}
+        .why-box{background:#f7f9fd;border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:12.5px;line-height:1.8;color:var(--ink-2)}
+        .why-box b{color:var(--accent)}
+        .why-box .wh{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+
+        /* empty state with CTA */
+        .cta-empty{text-align:center;padding:44px 26px;border:1px dashed var(--border-strong);border-radius:12px;background:#fcfcfd}
+        .cta-empty .eico{font-size:34px;margin-bottom:10px}
+        .cta-empty .et{font-size:16px;font-weight:700}
+        .cta-empty .es{font-size:13px;color:var(--ink-3);margin:6px auto 18px;max-width:480px;line-height:1.65}
+        .cta-empty .mono{color:var(--ink-2)}
+
+        /* policy gate */
+        .gate-wrap{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+        .gate-score{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--green-soft);border:3px solid var(--green);flex-shrink:0}
+        .gate-score .gv{font-size:26px;font-weight:700;color:var(--green);letter-spacing:-1px}
+        .gate-score .gl{font-size:10px;color:var(--green);font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+        .gate-tally{display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:260px}
+        .gate-tile{flex:1;min-width:110px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;text-align:center}
+        .gate-tile .k{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3)}
+        .gate-tile .v{font-size:21px;font-weight:700;margin-top:3px}
+        .gate-tile.ok .v{color:var(--green)}.gate-tile.warn .v{color:var(--amber)}.gate-tile.bad .v{color:var(--red)}
+
+        /* benchmark comparison */
+        .bm-cmp{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:26px}
+        .bm-col{text-align:center}
+        .bm-col .lbl{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px}
+        .bm-col .big{font-size:38px;font-weight:700;letter-spacing:-1.2px}
+        .bm-col.flat .big{color:var(--ink-2)}
+        .bm-col.win .big{color:var(--green)}
+        .bm-col .note{font-size:12px;color:var(--ink-3);margin-top:6px}
+        .bm-vs{color:var(--ink-3);font-weight:700;font-size:15px}
+        .bm-gain{display:flex;flex-direction:column;align-items:center;gap:1px;padding-left:22px;border-left:1px solid var(--border-strong)}
+        .bm-gain .gn{font-size:19px;font-weight:700;color:var(--green)}
+        .bm-gain .gl{font-size:11px;color:var(--ink-3);font-weight:600}
+
+        @media(max-width:1020px){
+            .hero-row{grid-template-columns:repeat(2,1fr)}
+            .live-strip{grid-template-columns:repeat(3,1fr)}
+            .grid2,.grid3{grid-template-columns:1fr 1fr}
+            .nav{width:200px}
+        }
+        @media(max-width:760px){
+            .shell{flex-direction:column}
+            .nav{width:100%;height:auto;position:static;flex-direction:row;overflow-x:auto;padding:10px 14px}
+            .brand{display:none}.nav-foot{display:none}
+            .nav-item{white-space:nowrap;width:auto}
+            .nav-sec{display:none}
+            .main{padding:20px 18px}
+            .grid2,.grid3{grid-template-columns:1fr}
+            .hero-row,.live-strip{grid-template-columns:1fr 1fr}
+            .impact{grid-template-columns:1fr;gap:14px}
+            .impact-divider{border-left:none;border-top:1px dashed var(--border-strong);width:100%;height:0}
+            .risk-name{width:110px}.risk-meta{width:120px}
+            .drawer{width:100vw}
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
+const API=window.__API_URL__||'';
+
+const fmt=p=>`₹${Math.round((p||0)/100).toLocaleString('en-IN')}`;
+const fmtL=p=>{const rs=Math.round((p||0)/100);return rs>=100000?`₹${(rs/100000).toFixed(2)}L`:`₹${rs.toLocaleString('en-IN')}`};
+const pct=(n,d)=>d>0?((n/d)*100).toFixed(1):'0';
+const timeOf=ts=>ts?(String(ts).split('T')[1]||ts).slice(0,8):'';
+const kv=p=>{try{return JSON.parse(p)}catch(e){return p}};
+
+const TYPE_LABELS={card_payment_failure:'Card Payment Failure',recurring_payment_failure:'Recurring Payment Failure',checkout_abandonment:'Checkout Abandonment',overdue_invoice:'Overdue Receivable'};
+const ACTION_LABELS={retry_payment:'Retry Payment',send_payment_link:'Payment Link',re_authorize_mandate:'Mandate Re-auth',send_dunning_message:'Payment Reminder',escalate_to_human:'Escalated to Human',blocked:'Blocked by Policy',none:'—'};
+
+function icon(name){const p=n=>`<path d="${n}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const d={
+        overview:'M3 12 12 4l9 8M5 10v10h5v-6h4v6h5V10',
+        live:'M13 10V3L4 14h7v7l9-11h-7z',
+        transactions:'M3 6h18M3 12h18M3 18h18',
+        benchmark:'M4 20V10m6 10V4m6 16v-8m4 8H2',
+        guardrails:'M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4zm0 6v4m0 3v.01',
+        audit:'M8 3h8l4 4v14H8V3zm0 0v4h4m-3 6h6m-6 4h6m-6-8h2',
+        evaluation:'M9 12l2 2 4-4m3-9H4v19h14V1z',
+        model:'M12 3l8 4v10l-8 4-8-4V7l8-4zm0 2.2L6 8v8l6 3 6-3V8l-6-2.8zM12 8l3 1.5v3L12 14l-3-1.5v-3L12 8z'
+    }[name]||'M4 6h16M4 12h16M4 18h16';
+    return `<svg class="avi" viewBox="0 0 24 24">${p(d)}</svg>`;
+}
+
+const liveStageTypes=['event.received','event.normalized','agent.started','agent.completed','diagnosis.completed','customer_context.completed','strategy.candidates_generated','strategy.ranked','policy.evaluated','execution.started','execution.completed','payment.pending','payment.confirmed','payment.failed','recovery.completed','recovery.blocked','human_review.required','event.completed'];
+
+const NAV=[['overview','Overview','overview'],['live','Live Recovery','live'],['transactions','Transactions','transactions'],['benchmark','Benchmark','benchmark'],['guardrails','Guardrails','guardrails'],['audit','Audit Trail','audit'],['evaluation','Evaluation','evaluation'],['model','Recovery AI','model']];
+
+function App(){
+    const[page,setPage]=useState('overview');
+    const[hero,setHero]=useState(null);
+    const[audit,setAudit]=useState(null);
+    const[guardrails,setGuardrails]=useState(null);
+    const[safety,setSafety]=useState(null);
+    const[interventions,setInterventions]=useState(null);
+    const[channelData,setChannelData]=useState(null);
+    const[gtTraces,setGtTraces]=useState(null);
+    const[auditVerify,setAuditVerify]=useState(null);
+    const[lm,setLm]=useState(null);
+    const[sse,setSse]=useState('connecting');
+    const[flow,setFlow]=useState([]);
+    const[txns,setTxns]=useState([]);
+    const[drawer,setDrawer]=useState(null);
+    const[evalRes,setEvalRes]=useState(null);
+    const[evalBusy,setEvalBusy]=useState(false);
+    const[sizeNote,setSizeNote]=useState(null);
+
+    const flowRef=useRef([]);const txnRef=useRef([]);
+    const timer=useRef(null);
+    const maybeEval=useRef({});
+    const loaded=useRef({});
+
+    const get=async p=>{const r=await fetch(API+p);if(!r.ok)throw new Error(p);return r.json()};
+
+    const loadHero=useCallback(async()=>{try{setHero(await get('/api/dashboard/hero'))}catch(e){}},[]);
+    const loadLive=useCallback(async()=>{try{setLm(await get('/api/live/metrics'))}catch(e){}},[]);
+
+    // Debounced light refresh (metrics + hero) after live activity — avoids the old
+    // behaviour of refetching everything on every SSE frame.
+    const scheduleRefresh=useCallback(()=>{
+        if(timer.current)clearTimeout(timer.current);
+        timer.current=setTimeout(()=>{loadLive();loadHero();},1200);
+    },[loadLive,loadHero]);
+
+    const loadPageData=useCallback(async(pageName)=>{
+        const flags=loaded.current;
+        if(!flags.core){
+            flags.core=true;
+            loadHero();
+            setAudit(await get('/api/audit').catch(()=>[]));
+            setGuardrails(await get('/api/guardrails/expanded').catch(()=>null));
+            setSafety(await get('/api/safety-metrics').catch(()=>null));
+            setInterventions(await get('/api/interventions').catch(()=>[]));
+            setChannelData(await get('/api/channel-effectiveness').catch(()=>[]));
+        }
+        if(pageName==='benchmark'&&!flags.benchmark){flags.benchmark=true;}
+        if(pageName==='guardrails'&&!flags.guardrails){
+            flags.guardrails=true;
+            setGtTraces(await get('/api/guardrail-trace').then(r=>r.traces).catch(()=>null));
+            setAuditVerify(await get('/api/audit/verify').catch(()=>null));
+        }
+        if(pageName==='evaluation'&&!flags.evaluation){flags.evaluation=true;runEval();}
+    },[loadHero]);
+
+    useEffect(()=>{loadPageData(page)},[page,loadPageData]);
+
+    useEffect(()=>{
+        if(loaded.current.dtor)return;loaded.current.dtor=true;
+        const es=new EventSource(`${API}/api/events/stream`);
+        es.onopen=()=>setSse('live');
+        es.onerror=()=>setSse('reconnecting');
+        es.onmessage=e=>{
+            let d;try{d=JSON.parse(e.data)}catch(err){return}
+            if(d.type==='connected')return;
+            if(d.type==='transaction.updated'){
+                txnRef.current=[d,...txnRef.current].slice(0,40);
+                setTxns(txnRef.current);
+                scheduleRefresh();
+                return;
+            }
+            if(liveStageTypes.includes(d.type)){
+                // terminal bookends
+                if(['payment.confirmed','payment.failed','payment.pending','recovery.blocked','human_review.required'].includes(d.type)){
+                    const key=d.transaction_id||d.correlation_id||d.event_id;
+                    const ex=flowRef.current.find(s=>s.transaction_id===key||s.correlation_id===key);
+                    txnRef.current=[...txnRef.current.filter(t=>t.txn!==key)]; // placeholder entries only
+                }
+                flowRef.current=[d,...flowRef.current].slice(0,200);
+                setFlow(flowRef.current);
+                if(['payment.confirmed','payment.failed','recovery.blocked','human_review.required','event.completed'].includes(d.type)){
+                    scheduleRefresh();
+                }
+            }
+        };
+        return()=>es.close();
+    },[scheduleRefresh]);
+
+    const runBatch=async()=>{
+        try{await fetch(API+'/api/batch/run',{method:'POST'})}catch(e){}
+        await Promise.all([loadHero(),loadLive()]);
+        setAudit(await get('/api/audit').catch(()=>[]));
+        setSizeNote('Benchmark replayed — numbers are deterministic.');
+        setTimeout(()=>setSizeNote(null),4000);
+    };
+    const runEval=async()=>{
+        if(evalBusy)return;setEvalBusy(true);setEvalRes(null);
+        try{setEvalRes(await fetch(API+'/api/evaluation/scenarios',{method:'POST'}).then(r=>r.json()))}
+        catch(e){setEvalRes({error:'Evaluation endpoint unavailable.'})}
+        setEvalBusy(false);
+    };
+    const openDrawer=async(id,stages)=>{
+        if(typeof id!=='string'||!id)return;
+        setDrawer({id,stages:stages||[],loading:true});
+        try{const t=await get(`/api/transaction/${encodeURIComponent(id)}/trace`);setDrawer(prev=>prev&&prev.id===id?{id,stages:stages||[],...t,loading:false}:prev)}
+        catch(e){setDrawer(prev=>prev&&prev.id===id?{id,stages:stages||[],notFound:true,loading:false}:prev)}
+    };
+
+    return(
+        <div className="shell">
+            <div className="nav">
+                <div className="brand">
+                    <div className="mark">RC</div>
+                    <div>
+                        <div className="brand-name">Recovery Copilot</div>
+                        <div className="brand-sub">AI Revenue Recovery</div>
+                    </div>
+                </div>
+                <div className="nav-sec">Workspace</div>
+                {NAV.map(([id,label])=>(
+                    <button key={id} className={`nav-item ${page===id?'active':''}`} onClick={()=>setPage(id)}
+                        dangerouslySetInnerHTML={{__html:`${icon(id)}<span>${label}</span>`}}/>
+                ))}
+                <div className="nav-foot">Synthetic, deterministic data.<br/>Webhook ingress: HMAC-signed.<br/>Policy boundary enforced.</div>
+            </div>
+
+            <main className="main">
+                <TopBar page={page} setPage={setPage} sse={sse}/>
+                {sizeNote&&<div className="answer" style={{marginBottom:16}}><b>Done.</b> {sizeNote}</div>}
+                {page==='overview'&&<Overview hero={hero} lm={lm} safety={safety} guardrails={guardrails} interventions={interventions} flow={flow} txns={txns} audit={audit} openDrawer={openDrawer} go={setPage} runBatch={runBatch}/>}
+                {page==='live'&&<LivePage lm={lm} flow={flow} txns={txns} sse={sse} openDrawer={openDrawer} loadLive={loadLive}/>}
+                {page==='transactions'&&<Transactions audit={audit} openDrawer={openDrawer}/>}
+                {page==='benchmark'&&<Benchmark hero={hero} interventions={interventions} channelData={channelData} runBatch={runBatch}/>}
+                {page==='guardrails'&&<Guardrails guardrails={guardrails} safety={safety} traces={gtTraces} verify={auditVerify} openDrawer={openDrawer}/>}
+                {page==='audit'&&<Audit audit={audit} verify={auditVerify} openDrawer={openDrawer}/>}
+                {page==='evaluation'&&<Evaluation res={evalRes} busy={evalBusy} run={runEval}/>}
+                {page==='model'&&<RecoveryAi/>}
+            </main>
+
+            {drawer&&<TransactionDrawer drawer={drawer} close={()=>setDrawer(null)}/>}
+        </div>
+    );
+}
+
+function TopBar({page,sse}){
+    const titles={overview:['Overview','Monitor revenue at risk and recover it — safely.'],live:['Live Recovery','Streaming ML → AI → Policy → Action → Outcome in real time.'],transactions:['Transactions','Investigate why each transaction got this decision.'],benchmark:['Benchmark','Did we actually make money?'],guardrails:['Guardrails','Ten enforced controls bound every action.'],audit:['Audit Trail','Provable, tamper-evident record of every decision.'],evaluation:['Evaluation','Does the system do what we promised?'],model:['Recovery AI','Frozen ExtraTrees model — 44 features → calibrated ML recovery probability → AI action success probability.']};
+    const[t,sub]=titles[page]||['',''];
+    return(
+        <div className="topbar">
+            <div>
+                <div className="page-title">{t}</div>
+                <div className="page-sub">{sub}</div>
+            </div>
+            <div className="spacer"></div>
+            <span className="badge neutral">Demo · synthetic data</span>
+            <SystemHealth/>
+        </div>
+    );
+}
+
+function SystemHealth(){
+    const[st,setSt]=useState(null);
+    const[open,setOpen]=useState(false);
+    useEffect(()=>{
+        let on=true;
+        const f=async()=>{
+            try{const r=await fetch(API+'/api/system/status');if(!r.ok)throw 0;const j=await r.json();if(on)setSt(j)}
+            catch(e){if(on)setSt({status:'error',components:[{name:'api',ok:false,detail:'unreachable'},{name:'database',ok:false,detail:'unreachable'},{name:'webhook',ok:false,detail:'unreachable'},{name:'sse',ok:false,detail:'unreachable'},{name:'policy_engine',ok:false,detail:'unreachable'}]})}
+        };
+        f();const t=setInterval(f,15000);
+        return()=>{on=false;clearInterval(t)};
+    },[]);
+    const ok=!st||st.status==='ok';
+    const deg=st?st.components.filter(c=>!c.ok):[];
+    const label=!st?'CHECKING…':ok?'ALL SYSTEMS OPERATIONAL':`${deg.length} ${deg.length===1?'SYSTEM':'SYSTEMS'} DEGRADED`;
+    return(
+        <div className="health-wrap">
+            <span className={`badge ${ok?'live':'warn'}`} onClick={()=>setOpen(!open)} title="System health — click for components">
+                <span className="dot"></span>{label}{st&&<span style={{marginLeft:6,fontSize:10}}>{open?'▲':'▼'}</span>}
+            </span>
+            {open&&st&&(
+                <div className="health-pop">
+                    {st.components.map(c=>(
+                        <div className="health-row" key={c.name}>
+                            <span className={`hdot ${c.ok?'up':'dn'}`}></span>
+                            <span style={{fontSize:12.5,fontWeight:600,textTransform:'uppercase',letterSpacing:.3,color:'var(--ink-2)'}}>{c.name==='policy_engine'?'POLICY ENGINE':c.name}</span>
+                            <div className="health-right">
+                                <span className={`hr-st ${c.ok?'up':'dn'}`}>{c.ok?'UP':'DOWN'}</span>
+                                <div className="hr-dt">{c.detail}</div>
+                            </div>
+                        </div>
+                    ))}
+                    <div style={{fontSize:10.5,color:'var(--ink-3)',padding:'6px 10px 2px',borderTop:'1px solid var(--border)',marginTop:6}}>
+                        {st.status==='ok'?'All services nominal · HMAC ingress verified · 10-rule policy gate':'At least one component needs attention.'}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function Spinner(){return <div className="empty"><div className="eico">◌</div>Loading data…</div>}
+
+function H({title,sub,right}){return(
+    <div style={{display:'flex',alignItems:'flex-end',gap:12,marginBottom:14}}>
+        <div style={{minWidth:0}}>
+            <div className="section-title">{title}</div>
+            {sub&&<div className="section-sub" style={{marginBottom:0}}>{sub}</div>}
+        </div>
+        <div className="spacer"></div>
+        {right}
+    </div>
+)}
+
+/* ---------------- OVERVIEW ---------------- */
+function Overview({hero,lm,safety,guardrails,interventions,flow,txns,audit,openDrawer,go,runBatch}){
+    if(!hero)return <Spinner/>;
+    const b=hero;
+    const atRiskTotal=b.categories.reduce((s,c)=>s+c.at_risk,0);
+    const actionsExec=interventions?interventions.reduce((s,iv)=>s+iv.count,0):0;
+    const stopped=(b.batch_blocked||0)+(b.batch_human_review||0);
+    const unsafe=(safety?((safety.afa_violations||0)+(safety.opt_out_violations||0)+(safety.excess_retries||0)):0);
+
+    return(
+        <div>
+            <div className="hero-row">
+                <div className="card tight stat">
+                    <div className="k">Confirmed Revenue Recovered</div>
+                    <div className="v">{fmt(b.batch_recovered_amount)}</div>
+                    <div className="s">{b.batch_recovered_count} of {b.batch_count} events confirmed</div>
+                </div>
+                <div className="card tight stat">
+                    <div className="k">Incremental</div>
+                    <div className="v accent-green">+{fmt(b.batch_incremental)}</div>
+                    <div className="s">+{b.batch_uplift}% uplift vs do-nothing</div>
+                </div>
+                <div className="card tight stat">
+                    <div className="k">Recovery Rate</div>
+                    <div className="v">{pct(b.batch_recovered_count,b.batch_count)}%</div>
+                    <div className="s">{b.batch_recovered_count} of {b.batch_count} at-risk events</div>
+                </div>
+                <div className="card tight stat">
+                    <div className="k">Stopped Safely</div>
+                    <div className="v accent-amber">{stopped}</div>
+                    <div className="s">{b.batch_blocked} blocked · {b.batch_human_review} human review</div>
+                </div>
+</div>
+
+        <LatestDecision flow={flow} audit={audit} runBatch={runBatch} go={go}/>
+
+        <div className="section">
+            <H title="Business Impact" sub="Benchmark — 100 deterministic events"/>
+                <div className="card">
+                    <div className="impact">
+                        <div className="impact-col flat">
+                            <div className="lbl">DO NOTHING</div>
+                            <div className="big">{fmt(b.batch_baseline_amount)}</div>
+                            <div className="note">Counterfactual baseline · no AI recovery</div>
+                        </div>
+                        <div className="impact-divider"></div>
+                        <div className="impact-col win">
+                            <div className="lbl">RECOVERY COPILOT</div>
+                            <div className="big">{fmt(b.batch_recovered_amount)}</div>
+                            <div className="note">Multi-agent pipeline + policy guardrails</div>
+                        </div>
+                    </div>
+                    <div style={{display:'flex',justifyContent:'center',gap:22,marginTop:18,paddingTop:16,borderTop:'1px dashed var(--border-strong)'}}>
+                        <div className="gain-num">+{fmt(b.batch_incremental)} <span style={{fontSize:12,fontWeight:600,color:'var(--ink-3)'}}>incremental</span></div>
+                        <div className="gain-num">+{b.batch_uplift}% <span style={{fontSize:12,fontWeight:600,color:'var(--ink-3)'}}>uplift</span></div>
+                        <div className="k" style={{alignSelf:'center',color:'var(--ink-3)'}}>vs do-nothing baseline</div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="section grid2">
+                <div>
+                    <H title="Revenue at Risk" sub="Batch · by event category"/>
+                    <div className="card" style={{height:'100%'}}>
+                        <div className="risk-total">{fmt(atRiskTotal)}<small>total revenue at risk across below categories</small></div>
+                        {[...b.categories].sort((a,c)=>c.at_risk-a.at_risk).map(c=>{
+                            const m=Math.max(...b.categories.map(x=>x.at_risk));
+                            return(
+                                <div className="risk-row" key={c.type}>
+                                    <div className="risk-name">{c.label}</div>
+                                    <div className="risk-bar"><i style={{width:`${Math.max((c.at_risk/m)*100,2)}%`}}></i></div>
+                                    <div className="risk-meta"><b>{fmtL(c.at_risk)}</b> · {c.events} events</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                <div>
+                    <H title="Recovery Funnel" sub="From at-risk to confirmed"/>
+                    <div className="card" style={{height:'100%'}}>
+                        <div className="funnel">
+                            <div className="funnel-step"><span className="fl">At-risk events</span><span className="fv">{b.batch_count}</span></div>
+                            <div className="funnel-arrow"><Ico arrow/></div>
+                            <div className="funnel-step"><span className="fl">Recovery attempts</span><span className="fv">{actionsExec}</span></div>
+                            <div className="funnel-arrow"><Ico arrow/></div>
+                            <div className="funnel-step"><span className="fl">Payments confirmed</span><span className="fv">{b.batch_recovered_count}</span></div>
+                            <div className="funnel-arrow"><Ico arrow/></div>
+                            <div className="funnel-step lg"><span className="fl">Confirmed revenue recovered</span><span className="fv">{fmt(b.batch_recovered_amount)}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="section">
+                <H title="Live Recovery" sub="Streaming over SSE — no page refresh" right={<button className="btn ghost" onClick={()=>go('live')}>Open Live Recovery →</button>}/>
+                <LivePanel lm={lm} flow={flow} txns={txns} compact openDrawer={openDrawer}/>
+            </div>
+
+            <div className="section">
+                <H title="Recovery Safety" sub="Policy engine is the hard boundary — the AI proposes, policy disposes"/>
+                <div className="card">
+                    <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:26}}>
+                        <div>
+                            <div style={{fontSize:30,fontWeight:700,letterSpacing:-.6}}>{guardrails&&guardrails.checks?guardrails.checks.length:10}<span style={{fontSize:14,color:'var(--ink-3)',fontWeight:600}}> policy rules</span></div>
+                            <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:3}}>enforced on every candidate action</div>
+                        </div>
+                        <div style={{width:1,height:52,background:'var(--border)'}}></div>
+                        <div>
+                            <div style={{fontSize:30,fontWeight:700,letterSpacing:-.6,color:'var(--green)'}}>{unsafe}<span style={{fontSize:14,color:'var(--ink-3)',fontWeight:600}}> unsafe executions</span></div>
+                            <div style={{fontSize:12.5,color:'var(--ink-3)',marginTop:3}}>opt-out · AFA · retry violations</div>
+                        </div>
+                        <div style={{width:1,height:52,background:'var(--border)'}}></div>
+                        {guardrails&&guardrails.summary&&(
+                            <div style={{fontSize:12.5,color:'var(--ink-2)',lineHeight:1.8}}>
+                                <div><b>{guardrails.summary.actions_evaluated}</b> events · <span className="chip ok">{(guardrails.summary.actions_allowed||0)+(guardrails.summary.pending||0)} allowed</span>{' '}
+                                <span className="chip warn">{(guardrails.summary.actions_modified||0)} modified</span></div>
+                                <div><span className="chip bad">{(guardrails.summary.actions_blocked||0)} denied</span>{' '}<span className="chip warn">{(guardrails.summary.human_review||0)} human review</span></div>
+                            </div>
+                        )}
+                        <div className="spacer"></div>
+                        <div className="btn-row">
+                            <button className="btn primary" onClick={()=>go('guardrails')}>View Guardrails</button>
+                            <button className="btn" onClick={runBatch}>Run Benchmark</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Ico({arrow}){return arrow?<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg>:null}
+
+/* ---------------- AI DECISION + PIPELINE (shared) ---------------- */
+function grpPayload(g,type){const s=(g.stages||[]).find(x=>x.type===type);return s&&s.payload?s.payload:null}
+
+function normLiveDecision(g){
+    const diag=grpPayload(g,'diagnosis.completed');
+    const rank=grpPayload(g,'strategy.ranked');
+    const cand=grpPayload(g,'strategy.candidates_generated');
+    const pol=grpPayload(g,'policy.evaluated');
+    const conf=grpPayload(g,'payment.confirmed');
+    const ctx=grpPayload(g,'customer_context.completed');
+    const selected=rank&&rank.selected;
+    // Ranked candidate list (prob + EV) when available; fall back to the
+    // generation-order list. Ranked order is the optimizer's EV ordering.
+    const rankedList=(rank&&rank.ranked)||(cand&&cand.candidates)||[];
+    const cp=(cand&&cand.candidates||[]).find(c=>c.strategy===selected)||null;
+    return {
+        live:true, label:TYPE_LABELS[g.type]||(g.type||'').replace(/_/g,' '), amount:g.amount||0, id:g.key,
+        diagnosis:diag&&diag.classification, confidence:diag&&diag.confidence, actionFamily:diag&&diag.action_family,
+        action:selected, probability:cp?cp.probability:null, probability_source:cp?cp.probability_source:null,
+        model_version:cp?cp.model_version:null, expected_value:cp?cp.expected_value:null,
+        reasons:rank&&rank.reason, candidates:rankedList, selected,
+        verdict:pol&&pol.verdict, policyReason:pol&&pol.reason,
+        status:g.status, confirmed:conf&&conf.payload?conf.payload.amount:0, recovered:0,
+        checks:[], safeToContact:ctx&&(ctx.safe_to_contact===true), optIn:ctx&&ctx.consent,
+    };
+}
+
+function normTraceDecision(t){
+    const ev=t.event||{}, au=t.audit||{}, pd=t.policy_decision||null;
+    const sc=t.specialist_calls||[];
+    const out=a=>{const c=sc.find(x=>x.agent===a);return c?(c.output_summary||''):''};
+    const cls=/classification=([^,]+)/.exec(out('diagnosis_agent'));
+    const evM=/ev=₹([\d,.]+)/.exec(out('recovery_optimizer'));
+    return {
+        live:false, label:TYPE_LABELS[ev.type]||(ev.type||'').replace(/_/g,' '), amount:ev.amount||au.amount_attempted||0,
+        id:ev.id||au.event_id||'—', diagnosis:cls?cls[1]:(ev.root_cause||''), confidence:au.diagnosis_confidence||null,
+        action:ACTION_LABELS[au.action]||au.action||'—', probability:null,
+        expected_value:evM?Math.round(parseFloat(evM[1].replace(/,/g,''))*100):null,
+        reasons:au.reason||'', candidates:[],
+        verdict:pd&&pd.verdict, policyReason:(pd&&pd.reason)||au.reason,
+        status:ev.status||au.workflow_status||'pending',
+        confirmed:0, recovered:ev.recovered_amount||0,
+        checks:pd&&pd.detailed_results||[], safeToContact:true, optIn:null,
+    };
+}
+
+function DecisionPanel({d}){
+    if(!d)return null;
+    const recovered=d.status==='confirmed'||d.status==='success'||d.recovered>0;
+    const waiting=d.status==='pending'||d.status==='pending_webhook'||d.status==='processing';
+    const verdictCls=d.verdict==='ALLOW'?'ok':(d.verdict==='DENY'?'bad':(d.verdict==='MODIFY'||d.verdict==='HUMAN_REVIEW'?'warn':'info'));
+    const amt=d.confirmed||d.recovered||0;
+    return(
+        <div className="dec-card">
+            <div className="dec-head">
+                <div>
+                    <div className="dt">AI Decision</div>
+                    <div style={{fontWeight:700,fontSize:15,marginTop:2}}>{d.label}</div>
+                </div>
+                <div className="spacer"></div>
+                <div className="damt">{fmt(d.amount)}</div>
+                <span className="mono" style={{color:'var(--ink-3)',fontSize:11}}>{d.id}</span>
+            </div>
+            <div className="dec-body">
+                <div className="dec-row"><span className="dk">Diagnosis</span><span className="dv">{d.diagnosis||'—'}{d.confidence!=null&&<span style={{color:'var(--ink-3)',fontWeight:500,marginLeft:6}}>· {Math.round(d.confidence*100)}% conf</span>}</span></div>
+                <div className="dec-row"><span className="dk">Recommended action</span><span className="dv">{d.action||'—'}</span></div>
+                {d.probability!=null&&d.probability>0&&<div className="dec-row"><span className="dk">ML Recovery Probability</span><span className="dv" style={{fontVariantNumeric:'tabular-nums'}}>{(d.probability*100).toFixed(1)}% <span className="k" style={{marginLeft:4}}>— frozen model, applied to candidates</span></span></div>}
+                {d.probability_source&&<div className="dec-row"><span className="dk">Model source</span><span className="dv mono" style={{fontSize:11.5}}>{d.probability_source}</span></div>}
+                {d.expected_value!=null&&d.expected_value>0&&<div className="dec-row"><span className="dk">Expected recovery</span><span className="dv">{fmt(d.expected_value)}</span></div>}
+                {d.verdict&&<div className="dec-row"><span className="dk">Policy</span><span className="dv"><span className={`chip ${verdictCls}`}>{d.verdict}</span>{d.verdict==='ALLOW'&&<span className="chip muted" style={{marginLeft:6}}>hard boundary</span>}</span></div>}
+            </div>
+            {(d.reasons||d.diagnosis)&&(
+                <div className="dec-why">
+                    <b>Why</b> {d.policyReason?`${d.policyReason}.`:''} {d.live&&d.probability!=null&&'Picked for the highest expected recovery value among policy-eligible candidates.'}
+                </div>
+            )}
+            {d.live&&d.candidates&&d.candidates.length>0&&(
+                <div className="dec-cands">
+                    <div className="k" style={{fontSize:10.5,fontWeight:700,textTransform:'uppercase',letterSpacing:.5,color:'var(--ink-3)',margin:'10px 0 6px'}}>Candidate ranking — ML probability → EV (amount × ML P(recovery))</div>
+                    {d.candidates.map((c,i)=>(
+                        <div className={`cand-row ${d.selected&&c.strategy===d.selected?'elected':''}`} key={c.strategy+'_'+i}>
+                            <span className="cand-strategy">{ACTION_LABELS[c.action]||c.strategy.replace(/_/g,' ')}</span>
+                            <span className="cand-meta">
+                                {(c.probability!=null&&<span className="cand-p">{(c.probability*100).toFixed(0)}%</span>)}
+                                <span className="cand-ev">{fmt(c.expected_value)}</span>
+                            </span>
+                            {d.selected&&c.strategy===d.selected&&<span className="cand-pick">elected</span>}
+                        </div>
+                    ))}
+                </div>
+            )}
+            <div className={`dec-foot ${recovered?'':(waiting?'pending':'blocked')}`}>
+                <span style={{fontSize:11,fontWeight:700,letterSpacing:.5,textTransform:'uppercase',color:'var(--ink-2)'}}>
+                    {recovered?'✓ trusted payment confirmation':waiting?'● awaiting confirmation':'× policy blocked'}
+                </span>
+                <span className="fv">{recovered?`+${fmt(amt||d.amount)} RECOVERED`:waiting?'waiting for webhook':'no recovery'}</span>
+            </div>
+        </div>
+    );
+}
+
+const PIPELINE=[['EVENT','event.received'],['DIAGNOSE','diagnosis.completed'],['CONTEXT','customer_context.completed'],['ML','ml.prediction'],['STRATEGY','strategy.candidates_generated'],['OPTIMIZE','strategy.ranked'],['POLICY','policy.evaluated'],['EXECUTE','execution.started'],['CONFIRM','payment.confirmed']];
+
+function PipelineStepper({group}){
+    if(!group||!(group.stages||[]).length)return null;
+    const S=group.stages;
+    const has=t=>S.some(s=>s.type===t);
+    const terminalOK=has('payment.confirmed');
+    const terminalFail=has('payment.failed')||has('recovery.blocked')||has('human_review.required');
+    const lastIdx=PIPELINE.reduce((m,[,t],i)=>has(t)?i:m,-1);
+    return(
+        <div className="stepper">
+            {PIPELINE.map(([label,type],i)=>{
+                let cls='',icon=String(i+1);
+                if(terminalOK&&has(type)){cls='done';icon='✓'}
+                else if(terminalFail&&has(type)){cls=type==='execution.started'?'fail':'done';icon=type==='execution.started'?'×':'✓'}
+                else if(i<lastIdx){cls='done';icon='✓'}
+                else if(i===lastIdx){cls='act';icon='●'}
+                return(
+                    <div className={`pstep ${cls}`} key={type}>
+                        <div className="ln"></div>
+                        <div className="sc">{icon}</div>
+                        <div className="sl">{label}</div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+function CtaEmpty({icon,title,sub,mono,btns}){
+    return(
+        <div className="cta-empty">
+            <div className="eico">{icon}</div>
+            <div className="et">{title}</div>
+            <div className="es">{sub}</div>
+            {mono&&<div className="mono" style={{marginBottom:16,color:'var(--ink-2)'}}>{mono}</div>}
+            {btns}
+        </div>
+    );
+}
+
+function LatestDecision({flow,audit,runBatch,go}){
+    const recents=useRecents(flow);
+    const persId=(()=>{
+        if(!audit)return null;
+        const ok=e=>e.result==='success'||e.result==='pending_webhook'||e.workflow_status==='PENDING_WEBHOOK'||e.result==='pending'||e.result==='human_review';
+        const s=audit.find(ok)||audit.find(e=>e.result!=='blocked'&&e.result!=='denied');
+        return s?s.event_id:null;
+    })();
+    const [dec,setDec]=useState(null);
+    const [loading,setLoading]=useState(false);
+    useEffect(()=>{
+        if(recents.length){setDec(normLiveDecision(recents[0]));setLoading(false);return;}
+        if(!persId){setDec(null);setLoading(false);return;}
+        let on=true;setLoading(true);setDec(null);
+        fetch(`${API}/api/transaction/${encodeURIComponent(persId)}/trace`)
+            .then(r=>r.ok?r.json():Promise.reject())
+            .then(t=>{if(on){setDec(normTraceDecision(t));setLoading(false);}})
+            .catch(()=>{if(on){setLoading(false);setDec(null);}});
+        return()=>{on=false};
+    },[recents[0]&&recents[0].key,persId]);
+    return(
+        <div className="section">
+            <H title="Latest Recovery Decision" sub={recents.length?'Shared live from the closed-loop stream':'Most recent decision · '+persId} right={<span className="chip info">explainable AI</span>}/>
+            <div className="card tight" style={{padding:0}}>
+                {loading&&<div className="empty"><div className="eico">◌</div>Loading latest decision…</div>}
+                {!loading&&dec&&<DecisionPanel d={dec}/>}
+                {!loading&&!dec&&(
+                    <CtaEmpty icon="🎯" title="No decision yet"
+                        sub="Push a payment failure through the pipeline with the Live Recovery simulator — the decision this agent made will appear here."
+                        btns={<div className="btn-row" style={{justifyContent:'center'}}>
+                            <button className="btn primary" onClick={()=>go('live')}>Open Live Recovery</button>
+                            <button className="btn" onClick={runBatch}>Run Benchmark</button>
+                        </div>}/>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/* ---------------- LIVE ---------------- */
+function LivePanel({lm,flow,txns,compact,openDrawer}){
+    const recents=useRecents(flow,txns);
+    return(
+        <div className="card">
+            <div className="live-strip">
+                <div className="lcell"><div className="k">Live Events</div><div className="v">{lm?lm.live_events:0}</div></div>
+                <div className="lcell"><div className="k">Pending</div><div className="v">{lm?lm.live_pending:0}</div></div>
+                <div className="lcell"><div className="k">Confirmed</div><div className="v accent-green">{lm?lm.live_confirmed_payments:0}</div></div>
+                <div className="lcell"><div className="k">Recovered</div><div className="v accent-green">{lm?(lm.live_money_recovered_display||fmt(lm.live_money_recovered)):fmt(0)}</div></div>
+                <div className="lcell"><div className="k">Open Sequences</div><div className="v">{lm?lm.open_recovery_sequences:0}</div></div>
+            </div>
+            {compact
+                ?<RecentTx rows={recents.slice(0,5)} openDrawer={openDrawer}/>
+                :<FullLive lm={lm} flow={flow} recents={recents} openDrawer={openDrawer}/>}
+        </div>
+    );
+}
+
+function useRecents(flow){
+    const groups={};
+    for(const ev of flow||[]){
+        const key=ev.transaction_id||ev.correlation_id||ev.event_id;
+        const g=groups[key]||(groups[key]={key,event_id:ev.event_id,stages:[],amount:0,type:'',action:'—',status:'pending',ts:ev.timestamp});
+        g.stages.push(ev);
+        if(!g.event_id)g.event_id=ev.event_id;
+        g.ts=ev.timestamp||g.ts;
+        const p=ev.payload||{};
+        if(ev.type==='event.received'){g.type=p.event_type||ev.event_type||'payment.failed';g.amount=p.amount||0;}
+        if(ev.type==='strategy.ranked'&&p.selected)g.action=p.selected;
+        if(ev.type==='execution.started'&&p.attempt!=null)g.stages['attempt']=p.attempt;
+        if(ev.type==='payment.confirmed'){g.status='confirmed';g.amount=p.amount||g.amount;}
+        if(ev.type==='payment.pending')g.status='pending';
+        if(ev.type==='payment.failed')g.status='failed';
+        if(ev.type==='recovery.blocked')g.status='blocked';
+        if(ev.type==='human_review.required')g.status='human_review';
+        if(ev.type==='event.completed'&&!g.status||ev.type==='recovery.completed')g.status=g.status||'pending';
+    }
+    return Object.values(groups).sort((a,b)=>String(b.ts).localeCompare(String(a.ts))||0);
+}
+
+function StatusChip({s}){
+    const map={confirmed:['ok','Confirmed'],success:['ok','Confirmed'],blocked:['bad','Blocked'],denied:['bad','Denied'],failed:['bad','Failed'],human_review:['warn','Human Review'],human:['warn','Human Review'],pending:['warn','Pending'],processing:['info','Processing'],pending_webhook:['warn','Pending']};
+    const[m,label]=map[s]||['muted',s];
+    const icon=m==='ok'?'✓':m==='bad'?'×':m==='warn'?'◷':m==='info'?'●':'·';
+    return <span className={`chip ${m}`}>{icon} {label}</span>;
+}
+
+function RecentTx({rows,openDrawer,limit}){
+    if(!rows.length)return <div className="empty"><div className="eico">◌</div>No live activity yet.<br/><span style={{fontSize:12}}>Use the simulator on the Live Recovery page to stream a payment failure through the webhook ingress.</span></div>;
+    return(
+        <table style={{marginTop:6}}>
+            <thead><tr><th>Event</th><th>Amount</th><th>Action</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {(limit?rows.slice(0,limit):rows).map(g=>(
+                    <tr key={g.key} onClick={()=>openDrawer(g.event_id||g.key, g.stages)}>
+                        <td><div style={{fontWeight:600}}>{TYPE_LABELS[g.type]||g.type.replace(/_/g,' ')}</div><div className="mono" style={{color:'var(--ink-3)'}}>{g.key}</div></td>
+                        <td className="right" style={{fontWeight:600}}>{fmt(g.amount)}</td>
+                        <td>{ACTION_LABELS[g.action]||g.action||'—'}</td>
+                        <td><StatusChip s={g.status}/></td>
+                        <td className="right" style={{color:'var(--ink-3)'}}>→</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
+function LivePage({lm,flow,txns,sse,openDrawer,loadLive}){
+    const[simType,setSimType]=useState('payment.failed');
+    const[simAmount,setSimAmount]=useState(50000);
+    const[simBusy,setSimBusy]=useState(false);
+    const[demoBusy,setDemoBusy]=useState(false);
+    const[expand,setExpand]=useState(true);
+    const recents=useRecents(flow);
+    const now=recents.length?recents[0]:null;
+
+    const simulate=async()=>{
+        setSimBusy(true);
+        try{await fetch(API+'/api/simulator/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_type:simType,amount:simAmount,currency:'INR'})})}catch(e){}
+        setSimBusy(false);
+        setTimeout(loadLive,1600);
+    };
+
+    const runDemo=async()=>{
+        setDemoBusy(true);
+        try{await fetch(API+'/api/demo/run',{method:'POST'})}catch(e){}
+        setTimeout(()=>{setDemoBusy(false);loadLive();},5600);
+    };
+
+    return(
+        <div>
+            <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:18}}>
+                <span className="badge neutral">Webhook · HMAC-signed · exact-once</span>
+                <div className="spacer"></div>
+                <span className="k" style={{color:'var(--ink-3)'}}>Avg decision {(lm&&lm.avg_decision_ms)||0}ms · conf {lm&&lm.time_to_confirmation_sec?lm.time_to_confirmation_sec.toFixed(2)+'s':'—'}</span>
+            </div>
+
+            <div className="section">
+                <H title="AI Decision" sub="A live event is moving through the recovery loop — the agent proposes, policy disposes." right={<span className={`badge ${sse==='live'?'live':'warn'}`}><span className="dot"></span>{sse==='live'?'STREAM CONNECTED':'RECONNECTING'}</span>}/>
+                {now
+                    ?<div>
+                        <div className="card tight" style={{marginBottom:14}}><PipelineStepper group={now}/></div>
+                        <DecisionPanel d={normLiveDecision(now)}/>
+                    </div>
+                    :<CtaEmpty icon="📡" title="Pipeline is idle"
+                        sub="No event is being processed right now. Run the demo to stream the 5-scenario recovery narrative live, or send a single test payment failure through the ingress."
+                        btns={<span style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+                            <button className="btn primary" onClick={runDemo} disabled={demoBusy}>{demoBusy?'Running demo…':'Run 5-scenario Demo'}</button>
+                            <button className="btn ghost" onClick={simulate} disabled={simBusy}>{simBusy?'Launching…':'Send Test Event'}</button>
+                        </span>}/>
+                }
+            </div>
+
+            <LivePanel lm={lm} flow={flow} txns={txns} openDrawer={openDrawer}/>
+
+            <div className="section" style={{marginTop:22}}>
+                <H title="Simulator" sub="Inject a synthetic payment failure through the real webhook ingress (demo HMAC)."/>
+                <div className="card tight" style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+                    <select className="input select" value={simType} onChange={e=>setSimType(e.target.value)}>
+                        <option value="payment.failed">Payment Failed</option>
+                        <option value="recurring_payment_failure">Recurring Payment Failure</option>
+                        <option value="checkout_abandonment">Checkout Abandonment</option>
+                        <option value="overdue_invoice">Overdue Invoice</option>
+                    </select>
+                    <input className="input num" type="number" value={simAmount} onChange={e=>setSimAmount(parseInt(e.target.value)||0)} placeholder="Amount (paise)"/>
+                    <button className="btn primary" onClick={simulate} disabled={simBusy}>{simBusy?'Sending…':'Simulate Payment Failure'}</button>
+                    <button className="btn ghost" onClick={runDemo} disabled={demoBusy}>{demoBusy?'Demo running…':'Run Demo'}</button>
+                    <span className="k" style={{color:'var(--ink-3)',marginLeft:'auto'}}>Recovered amounts count only on a trusted payment confirmation.</span>
+                </div>
+            </div>
+
+            <div className="section" style={{marginTop:22}}>
+                <H title="Pipeline Activity" sub="Closed-loop stages broadcast over SSE" right={<button className="btn ghost" onClick={()=>setExpand(!expand)}>{expand?'Collapse':'Expand'}</button>}/>
+                {expand&&(
+                    <div className="card tight" style={{maxHeight:340,overflowY:'auto'}}>
+                        {flow.slice(0,40).map((ev,i)=>{
+                            const ok=ev.status==='ok'||ev.status==='pending';
+                            const p=ev.payload||{};
+                            let detail='';
+                            if(ev.type==='diagnosis.completed')detail=`${p.classification||''} · ${p.action_family||''}${p.requires_afa?' · AFA':''}`;
+                            else if(ev.type==='strategy.candidates_generated')detail=p.count!=null?`${p.count} candidates${p.reason?` — ${p.reason}`:''}`:'';
+                            else if(ev.type==='strategy.ranked')detail=`elected ${p.selected||'—'}${p.reason?` · ${p.reason}`:''}`;
+                            else if(ev.type==='policy.evaluated')detail=p.verdict?`${p.verdict}${p.reason?` · ${p.reason}`:''}`:'';
+                            else if(ev.type==='execution.completed')detail=p.decision_ms!=null?`decision ${p.decision_ms}ms · exec ${p.execution_ms??'?'}ms`:(p.result||'');
+                            else if(ev.type==='payment.confirmed')detail=`${fmt(p.amount||0)} confirmed`;
+                            else if(ev.type==='payment.pending')detail='executed · awaiting confirmation';
+                            else if(ev.type==='payment.failed')detail='attempt failed';
+                            else if(ev.type==='customer_context.completed')detail=`safe_to_contact ${String(p.safe_to_contact)} · ${p.channel||''}`;
+                            else if(ev.type==='recovery.blocked'||ev.type==='human_review.required')detail=p.reason||'';
+                            return(
+                                <div className="stream-item" key={i}>
+                                    <span className="stream-t">{timeOf(ev.timestamp)}</span>
+                                    <span className="stream-type">{ev.type.replace(/\./g,' ')}</span>
+                                    <span className="mono" style={{color:'var(--ink-3)',flexShrink:0}}>{(ev.transaction_id||ev.event_id)}</span>
+                                    <StatusChip s={(ev.status==='terminal'?'pending':ev.status)||'pending'}/>
+                                    <span className="stream-detail" title={detail}>{detail}</span>
+                                </div>
+                            );
+                        })}
+                        {!flow.length&&<div className="empty"><div className="eico">◌</div>Waiting for inbound events…</div>}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function FullLive({lm,flow,recents,openDrawer}){
+    return(<div>
+        <div className="grid2" style={{gap:10,marginBottom:14}}>
+            <div className="kpi"><div className="k">Recovery Rate</div><div className="v">{lm?pct(lm.live_confirmed_payments,lm.live_events):'0'}%</div></div>
+            <div className="kpi"><div className="k">Time to Confirmation</div><div className="v">{lm&&lm.time_to_confirmation_sec?lm.time_to_confirmation_sec.toFixed(2)+'s':'—'}</div></div>
+            <div className="kpi"><div className="k">Blocked Safely</div><div className="v accent-amber">{lm?lm.live_blocked:0}</div></div>
+            <div className="kpi"><div className="k">Human Reviews</div><div className="v accent-amber">{lm?lm.live_human_reviews:0}</div></div>
+            <div className="kpi"><div className="k">Attempts</div><div className="v">{lm?lm.live_recovery_attempts:0}</div></div>
+            <div className="kpi"><div className="k">Avg Execution</div><div className="v">{lm?(lm.avg_execution_ms||0)+'ms':'—'}</div></div>
+        </div>
+        <RecentTx rows={recents} openDrawer={openDrawer}/>
+    </div>);
+}
+
+/* ---------------- TRANSACTIONS ---------------- */
+function Transactions({audit,openDrawer}){
+    const[q,setQ]=useState('');
+    const rows=(audit||[]).filter(e=>{
+        const s=q.trim().toLowerCase();
+        if(!s)return true;
+        return [e.event_id,e.customer_id,e.action,(e.amount_attempted||'').toString()].join(' ').toLowerCase().includes(s);
+    });
+    return(
+        <div>
+            <div className="input" style={{maxWidth:420,marginBottom:18}} placeholder="Search by event id, customer, action or amount…" onKeyUp={e=>setQ(e.target.value)}/>
+            <div className="card" style={{padding:0,overflow:'hidden'}}>
+                <table>
+                    <thead><tr><th>Event</th><th>Customer</th><th>Action</th><th className="right">Amount</th><th>Policy</th><th>Result</th><th>Time</th></tr></thead>
+                    <tbody>
+                        {rows.slice(0,60).map(e=>{
+                            const pd=(()=>{try{return JSON.parse(e.policy_decision)}catch(x){return null}})();
+                            const verdict=pd&&pd.verdict;
+                            return(
+                                <tr key={e.event_id+'_'+e.timestamp} onClick={()=>openDrawer(e.event_id)}>
+                                    <td><span className="mono">{e.event_id}</span></td>
+                                    <td>{e.customer_id}</td>
+                                    <td>{ACTION_LABELS[e.action]||e.action}</td>
+                                    <td className="right">{fmt(e.amount_attempted)}</td>
+                                    <td><PolicyChip v={verdict} status={e.result}/></td>
+                                    <td><StatusChip s={e.result||e.workflow_status}/></td>
+                                    <td className="mono" style={{color:'var(--ink-3)'}}>{timeOf(e.timestamp)}</td>
+                                </tr>
+                            );
+                        })}
+                        {!rows.length&&<tr><td colSpan={7}><div className="empty">No matching transactions.</div></td></tr>}
+                    </tbody>
+                </table>
+            </div>
+            <div className="k" style={{color:'var(--ink-3)',marginTop:12}}>{rows.length} transactions · click a row to open the full decision trace</div>
+        </div>
+    );
+}
+
+function verdictOf(e){try{const pd=JSON.parse(e.policy_decision);if(pd&&pd.verdict)return pd.verdict}catch(x){}return null}
+function finalStatus(e){if(e.status==='human_review')return 'HUMAN_REVIEW';if(e.status==='blocked')return 'DENY';return verdictOf(e)||'ALLOW'}
+function PolicyChip({v,status}){
+    const final=status==='human_review'?'HUMAN_REVIEW':status==='blocked'?'DENY':v;
+    const map={ALLOW:['ok','Allowed'],MODIFY:['warn','Modified'],DENY:['bad','Denied'],HUMAN_REVIEW:['warn','Human Review'],PENDING:['info','Pending']};
+    const[m,l]=map[final]||['muted',final||'—'];
+    return <span className={`chip ${m}`}>{l}</span>;
+}
+
+/* ---------------- BENCHMARK ---------------- */
+function Benchmark({hero,interventions,channelData,runBatch}){
+    const[busy,setBusy]=useState(false);
+    if(!hero)return <Spinner/>;
+    const b=hero;
+    const atRisk=b.categories.reduce((s,c)=>s+c.at_risk,0);
+    const amountRate=b.at_riskRate||pct(b.batch_recovered_amount,atRisk);
+    const attempts=b.batch_recovery_attempts||(interventions?interventions.reduce((s,iv)=>s+iv.count,0):0);
+    const doRun=async()=>{setBusy(true);await runBatch();setBusy(false)};
+    return(
+        <div>
+            <div className="hero-row">
+                <div className="card tight stat"><div className="k">Confirmed Revenue Recovered</div><div className="v">{fmt(b.batch_recovered_amount)}</div><div className="s">{b.batch_recovered_count} of {b.batch_count} events</div></div>
+                <div className="card tight stat"><div className="k">Counterfactual Baseline</div><div className="v">{fmt(b.batch_baseline_amount)}</div><div className="s">do-nothing · per-category historical rates</div></div>
+                <div className="card tight stat"><div className="k">Incremental</div><div className="v accent-green">+{fmt(b.batch_incremental)}</div><div className="s">{'+'}higher than baseline</div></div>
+                <div className="card tight stat"><div className="k">Uplift</div><div className="v accent-green">+{b.batch_uplift}%</div><div className="s">event rate {pct(b.batch_recovered_count,b.batch_count)}%</div></div>
+            </div>
+
+            <div className="section">
+                <H title="Did We Actually Make Money?" sub="Confirmed revenue vs the honest counterfactual — 100 deterministic events replayed through the same pipeline."/>
+                <div className="card">
+                    <div className="bm-cmp">
+                        <div className="bm-col flat">
+                            <div className="lbl">DO NOTHING</div>
+                            <div className="big">{fmt(b.batch_baseline_amount)}</div>
+                            <div className="note">historical recovery rates only</div>
+                        </div>
+                        <div className="bm-vs">VS</div>
+                        <div className="bm-col win">
+                            <div className="lbl">RECOVERY COPILOT</div>
+                            <div className="big">{fmt(b.batch_recovered_amount)}</div>
+                            <div className="note">agent proposes → policy disposes → trusted payment</div>
+                        </div>
+                        <div className="bm-gain">
+                            <div className="gn">{fmt(b.batch_incremental)}</div>
+                            <div className="gl">incremental</div>
+                            <div className="gn" style={{fontSize:15}}>+{b.batch_uplift}%</div>
+                            <div className="gl">uplift</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="card" style={{marginTop:14}}>
+                    <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>How we generated the uplift</div>
+                    <div style={{fontSize:12.5,color:'var(--ink-3)',marginBottom:18}}>Every at-risk event gets a diagnosis, a ranked set of candidate actions, a 10-check policy gate — then only trusted, confirmed payments count as recovered.</div>
+                    <div className="funnel">
+                        <div className="funnel-step"><span className="fl">At-risk events</span><span className="fv">{b.batch_count}</span></div>
+                        <div className="funnel-arrow"><Ico arrow/></div>
+                        <div className="funnel-step"><span className="fl">Recovery attempts</span><span className="fv">{attempts}</span></div>
+                        <div className="funnel-arrow"><Ico arrow/></div>
+                        <div className="funnel-step"><span className="fl">Confirmed payments</span><span className="fv">{b.batch_recovered_count}</span></div>
+                        <div className="funnel-arrow"><Ico arrow/></div>
+                        <div className="funnel-step lg"><span className="fl">Confirmed revenue recovered</span><span className="fv">{fmt(b.batch_recovered_amount)}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="section">
+                <H title="Amount Recovery" sub="Share of at-risk money recovered (event rate is per-transaction)" right={<button className="btn primary" onClick={doRun} disabled={busy}>{busy?'Replaying…':'Run Benchmark'}</button>}/>
+                <div className="card">
+                    <div className="kpis" style={{gridTemplateColumns:'repeat(3,1fr)',marginTop:0}}>
+                        <div className="kpi"><div className="k">Event Recovery Rate</div><div className="v">{pct(b.batch_recovered_count,b.batch_count)}%</div><div className="k" style={{marginTop:3}}>{b.batch_recovered_count} / {b.batch_count} events</div></div>
+                        <div className="kpi"><div className="k">Amount Recovery Rate</div><div className="v">{amountRate}%</div><div className="k" style={{marginTop:3}}>{fmt(b.batch_recovered_amount)} / {fmt(atRisk)} at risk</div></div>
+                        <div className="kpi"><div className="k">Capped by Safety</div><div className="v accent-amber">{b.batch_blocked+b.batch_human_review}</div><div className="k" style={{marginTop:3}}>{b.batch_blocked} denied · {b.batch_human_review} human review</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="section">
+                <H title="Category Performance" sub="Actual recovered vs the do-nothing counterfactual per decline category"/>
+                <div className="card" style={{padding:0,overflow:'hidden'}}>
+                    <table>
+                        <thead><tr><th>Category</th><th className="right">Events</th><th className="right">At Risk</th><th className="right">Do-Nothing Rate</th><th className="right">Baseline</th><th className="right">Recovered</th><th className="right">Incremental</th></tr></thead>
+                        <tbody>
+                            {(b.batch_category_baselines||[]).map(cb=>(
+                                <tr key={cb.decline_code} onClick={()=>{}} style={{cursor:'default'}}>
+                                    <td style={{fontWeight:600}}>{(cb.decline_code||'').replace(/_/g,' ')}</td>
+                                    <td className="right">{cb.events}</td>
+                                    <td className="right">{fmt(cb.total_amount)}</td>
+                                    <td className="right"><span className="chip muted">{(cb.counterfactual_rate*100).toFixed(0)}%</span></td>
+                                    <td className="right" style={{color:'var(--ink-3)'}}>{fmt(cb.counterfactual_baseline)}</td>
+                                    <td className="right" style={{color:'var(--green)',fontWeight:600}}>{fmt(cb.actual_recovered)}</td>
+                                    <td className="right" style={{color:cb.incremental>=0?'var(--green)':'var(--red)'}}>{cb.incremental>=0?'+':''}{fmt(cb.incremental)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="k" style={{color:'var(--ink-3)',marginTop:10}}>Counterfactual baseline = historical do-nothing recovery rate × total amount at risk per category. Incremental = actual recovered − baseline.</div>
+            </div>
+
+            <div className="section grid2">
+                <div>
+                    <H title="Money by Action" sub="Recovered per executed action"/>
+                    <div className="card tight" style={{height:'100%'}}>
+                        {(interventions||[]).map(iv=>(
+                            <div key={iv.action} style={{display:'flex',alignItems:'center',gap:12,padding:'9px 0',borderBottom:'1px solid var(--border)'}}>
+                                <div style={{flex:1}}>
+                                    <div style={{fontWeight:600,fontSize:13}}>{iv.label}</div>
+                                    <div style={{fontSize:11.5,color:'var(--ink-3)'}}>{iv.count} attempts</div>
+                                </div>
+                                <div style={{flex:2}}>
+                                    <div style={{height:6,background:'#eef0f3',borderRadius:99,overflow:'hidden'}}>
+                                        <div style={{height:'100%',width:`${Math.min((iv.recovered/Math.max(interventions.reduce((s,x)=>s+x.recovered,0),1))*100,100)}%`,background:'var(--green)',borderRadius:99}}></div>
+                                    </div>
+                                </div>
+                                <div style={{width:110,textAlign:'right',fontWeight:600,fontSize:13,color:iv.recovered>0?'var(--green)':'var(--ink-3)'}}>{fmt(iv.recovered)}</div>
+                            </div>
+                        ))}
+                        {(interventions||[]).length===0&&<div className="empty">No execution data.</div>}
+                    </div>
+                </div>
+                <div>
+                    <H title="Recovery by Channel" sub="Honest attribution · small samples flagged"/>
+                    <div className="card tight" style={{height:'100%'}}>
+                        {(channelData||[]).map(ch=>(
+                            <div key={ch.channel} style={{display:'flex',alignItems:'center',gap:12,padding:'9px 0',borderBottom:'1px solid var(--border)'}}>
+                                <div style={{flex:1}}>
+                                    <div style={{fontWeight:600,fontSize:13}}>{ch.label}</div>
+                                    <div style={{fontSize:11.5,color:'var(--ink-3)'}}>{ch.recovered}/{ch.total_events} recovered · {fmt(ch.recovered_amount)}</div>
+                                </div>
+                                <div style={{textAlign:'right'}}>
+                                    {ch.insufficient_sample
+                                        ?<span className="chip warn">small sample</span>
+                                        :<span style={{fontWeight:700,fontSize:15,color:'var(--green)'}}>{ch.recovery_rate}%</span>}
+                                </div>
+                            </div>
+                        ))}
+                        {(channelData||[]).length===0&&<div className="empty">No channel data.</div>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ---------------- GUARDRAILS ---------------- */
+function Guardrails({guardrails,safety,traces,verify,openDrawer}){
+    const[sel,setSel]=useState(0);
+    const[stp,setStp]=useState(0);
+    const[gopen,setGopen]=useState({});
+    if(!guardrails)return <Spinner/>;
+    const s=guardrails.summary;
+    const tracesList=traces||[];
+    const t=tracesList[sel];
+    const vCls=t&&t.verdict?String(t.verdict).toLowerCase():'';
+    return(
+        <div>
+            <div className="hero-row">
+                <div className="card tight stat"><div className="k">Enforced Controls</div><div className="v">{guardrails.checks.length}</div><div className="s">ALLOW · MODIFY · DENY</div></div>
+                <div className="card tight stat"><div className="k">Events Evaluated</div><div className="v">{s.actions_evaluated}</div><div className="s">one verdict per event</div></div>
+                <div className="card tight stat"><div className="k">Denied</div><div className="v accent-red">{s.actions_blocked}</div><div className="s">+ {s.actions_modified} modified</div></div>
+                <div className="card tight stat"><div className="k">Human Review</div><div className="v accent-amber">{s.human_review}</div><div className="s">{s.pending} pending confirmation</div></div>
+            </div>
+
+            <div className="section">
+                <H title="Policy Gate" sub="A hard boundary — no recovery action bypasses policy." right={<span className={`chip ${s.actions_blocked===0?'ok':'warn'}`}>enforcing live</span>}/>
+                <div className="card tight">
+                    <div className="gate-wrap">
+                        <div className="gate-score">
+                            <div className="gv">{guardrails.checks.length}/{guardrails.checks.length}</div>
+                            <div className="gl">Passed</div>
+                        </div>
+                        <div className="gate-tally">
+                            <div className="gate-tile ok"><div className="k">Allowed</div><div className="v">{(s.actions_allowed||0)+(s.pending||0)}</div></div>
+                            <div className="gate-tile warn"><div className="k">Modified</div><div className="v">{s.actions_modified||0}</div></div>
+                            <div className="gate-tile bad"><div className="k">Denied</div><div className="v">{s.actions_blocked||0}</div></div>
+                            <div className="gate-tile warn"><div className="k">Human Review</div><div className="v">{s.human_review||0}</div></div>
+                        </div>
+                        <div style={{flex:1,minWidth:220,fontSize:12.5,color:'var(--ink-2)',lineHeight:1.75}}>
+                            <div style={{fontWeight:700,color:'var(--ink-2)',marginBottom:6}}>No recovery action bypasses policy.</div>
+                            The optimizer proposes <b>{s.actions_evaluated}</b> candidate actions. Policy agents check every one against <b>{guardrails.checks.length} hard controls</b> — opt-out, AFA ceiling, retry budget, cooling, contact cadence, amount ceiling, rights-aware discounts, discount cap, risk, and diagnosis confidence. Only actions that pass are allowed to execute.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="section">
+                <H title="Enforced Controls" sub="Click a control to see what it does"/>
+                <div className="grid3">
+                    {guardrails.checks.map(ch=>(
+                        <div className="gcell" key={ch.name} onClick={()=>setGopen(p=>({...p,[ch.name]:!p[ch.name]}))}>
+                            <div className="gn"><span className="check-mark pass" style={{background:'transparent',border:'1px solid var(--border)'}}>✓</span>{ch.name}</div>
+                            <div className="gc">{gopen[ch.name]?ch.description:ch.config}</div>
+                            <div className="gc" style={{fontWeight:600,color:'var(--green)',marginTop:2}}>{gopen[ch.name]?ch.config:''}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {safety&&(
+                <div className="section">
+                    <H title="Safety Verdict" sub="Post-hoc checks that no unsafe action ever executed"/>
+                    <div className="card" style={{display:'flex',flexWrap:'wrap',gap:18,alignItems:'center'}}>
+                        {(safety.afa_violations||0)+(safety.opt_out_violations||0)+(safety.excess_retries||0)===0
+                            ?<span className="badge live"><span className="dot"></span>0 unsafe executions — every action stayed inside the guardrails</span>
+                            :<span className="badge warn"><span className="dot"></span>{safety.afa_violations+safety.opt_out_violations+safety.excess_retries} safety violations found</span>}
+                        <span className="k" style={{color:'var(--ink-3)'}}>AFA {safety.afa_violations} · opt-out {safety.opt_out_violations} · excess retries {safety.excess_retries} · false recovery {(safety.false_recovery_rate*100).toFixed(0)}%</span>
+                    </div>
+                </div>
+            )}
+
+            <div className="section">
+                <H title="Guardrail Trace — Live Proof" sub="The exact decision path for adversarial scenarios"/>
+                {tracesList.length>0&&(
+                    <div className="trace-tabs">
+                        {tracesList.map((tr,i)=>(
+                            <button key={tr.scenario_id} className={`trace-tab ${sel===i?'active':''}`} onClick={()=>{setSel(i);setStp(0)}}>
+                                {tr.verdict} · {tr.scenario_id.replace('demo_','').replace('chaos_','').replace(/_/g,' ')}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                {t&&(
+                    <div className="card tight">
+                        <div style={{display:'flex',flexWrap:'wrap',gap:12,alignItems:'center',marginBottom:14}}>
+                            <span className={`chip ${t.verdict==='ALLOW'?'ok':t.verdict==='DENY'?'bad':'warn'}`}>{t.verdict}</span>
+                            <span style={{fontSize:13,color:'var(--ink-2)'}}>{t.description}</span>
+                            <div className="spacer"></div>
+                            <span style={{fontSize:12,fontWeight:600}}>{fmt(t.amount)}</span>
+                            {t.proposed_discount>0&&<span className="chip warn">{t.proposed_discount}% discount proposed</span>}
+                        </div>
+                        {t.steps.map((s,i)=>(
+                            <div key={i} className="step-row" onClick={()=>setStp(i)}>
+                                <div className={`step-ico ${i<stp?'done':i===stp?'active':t.fired_rule&&i===String(t.steps).indexOf('Policy')?'fail':'wait'}`}>
+                                    {i<stp?'✓':(t.fired_rule&&i===3?'✕':i+1)}
+                                </div>
+                                <div className="step-body">
+                                    <div className="step-title">{s.icon||''} {s.agent}</div>
+                                    <div className="step-detail mono" style={{fontSize:11.5}}>→ {s.output}</div>
+                                    <div className="step-detail">{s.detail}</div>
+                                </div>
+                            </div>
+                        ))}
+                        {t.fired_rule&&(
+                            <div className="verdict-box deny">
+                                <div style={{fontWeight:700,color:'var(--red)'}}>Rule fired: {t.fired_rule}</div>
+                                <div style={{fontSize:12.5,color:'var(--ink-2)',marginTop:4}}>{t.fired_explanation}</div>
+                                {t.modified_request&&<div style={{fontSize:12.5,marginTop:6}}><b>Modified:</b> {t.original_request?.action} ({t.original_request?.discount_percent}% discount) → {t.modified_request.action} ({t.modified_request.discount_percent}%)</div>}
+                            </div>
+                        )}
+                        <div style={{marginTop:14}}>
+                            <div className="k" style={{fontSize:10.5,fontWeight:700,textTransform:'uppercase',letterSpacing:.5,color:'var(--ink-3)',marginBottom:6}}>Policy checks</div>
+                            {t.checks.map((c,i)=>(
+                                <div className="check-row" key={i}>
+                                    <span className={`check-mark ${c.result==='PASS'?'pass':'fail'}`}>{c.result==='PASS'?'✓':'✗'}</span>
+                                    <span className="check-rule">{c.rule}</span>
+                                    <span className="check-exp" style={{flex:1}}>{c.explanation}</span>
+                                    {c.regulatory_basis&&<span className="check-exp" style={{color:'var(--blue)'}}>{c.regulatory_basis}</span>}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {!tracesList.length&&<div className="empty"><div className="eico">◌</div>Guardrail traces could not be loaded.</div>}
+            </div>
+
+            {verify&&(
+                <div className="section">
+                    <H title="Audit Chain Integrity" sub="Tamper-evident hash chain over every decision"/>
+                    <div className="card" style={{display:'flex',alignItems:'center',gap:16}}>
+                        <span className={`badge ${verify.valid?'live':'bad'}`}><span className="dot"></span>{verify.valid?'CHAIN INTACT':'CHAIN BROKEN'}</span>
+                        <span className="k" style={{color:'var(--ink-3)'}}>{verify.entries} entries verified · {verify.message}</span>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ---------------- AUDIT ---------------- */
+function Audit({audit,verify,openDrawer}){
+    const[filter,setFilter]=useState('all');
+    const[q,setQ]=useState('');
+    const[answer,setAnswer]=useState(null);
+    const[busy,setBusy]=useState(false);
+    const ask=async()=>{
+        if(!q.trim())return;setBusy(true);
+        try{setAnswer(await fetch(`${API}/api/audit/query?q=${encodeURIComponent(q)}`).then(r=>r.json()))}catch(e){setAnswer({answer:'Error querying audit log.'})}
+        setBusy(false);
+    };
+    const rows=(audit||[]).filter(e=>{
+        if(filter==='all')return true;
+        if(filter==='confirmed')return e.result==='success';
+        return finalStatus(e)===filter;
+    });
+    return(
+        <div>
+            <div style={{marginBottom:18}}>
+                <H title="Ask the audit log"/>
+                <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                    <input className="input" style={{maxWidth:520}} value={q} onChange={e=>setQ(e.target.value)} placeholder={'Why didn\u2019t we retry txn_047? Try any transaction id.'} onKeyDown={e=>e.key==='Enter'&&ask()}/>
+                    <button className="btn primary" onClick={ask} disabled={busy}>{busy?'Searching…':'Ask'}</button>
+                    {verify&&<span style={{marginLeft:'auto'}}>
+                        <span className={`chip ${verify.valid?'ok':'bad'}`}>{verify.valid?'✓ Chain verified · '+(verify.entries||0)+' entries':'✗ Chain broken'}</span>
+                    </span>}
+                </div>
+                {answer&&<div className="answer" style={{marginTop:12}}><b>Answer:</b> {answer.answer}</div>}
+            </div>
+
+            <H title="Decision Log" sub="Every event, every verdict, every rule"/>
+            <div className="filterbar">
+                {[['all','All'],['ALLOW','Allowed'],['MODIFY','Modified'],['DENY','Denied'],['HUMAN_REVIEW','Human Review'],['confirmed','Confirmed']].map(([v,l])=>(
+                    <button key={v} className={`fbtn ${filter===v?'on':''}`} onClick={()=>setFilter(v)}>{l}</button>
+                ))}
+            </div>
+            <div className="card" style={{padding:0,overflow:'hidden'}}>
+                <table>
+                    <thead><tr><th>Time</th><th>Event</th><th>Customer</th><th>Action</th><th className="right">Amount</th><th>Policy</th><th>Result</th></tr></thead>
+                    <tbody>
+                        {rows.slice(0,80).map(e=>(
+                            <tr key={e.event_id+'_'+e.timestamp} onClick={()=>openDrawer(e.event_id)}>
+                                <td className="mono" style={{color:'var(--ink-3)'}}>{e.timestamp?e.timestamp.replace('T',' ').slice(0,19):''}</td>
+                                <td><span className="mono">{e.event_id}</span></td>
+                                <td>{e.customer_id}</td>
+                                <td>{ACTION_LABELS[e.action]||e.action}</td>
+                                <td className="right">{fmt(e.amount_attempted)}</td>
+                                <td><PolicyChip v={verdictOf(e)} status={e.result}/></td>
+                                <td><StatusChip s={e.result||e.workflow_status}/></td>
+                            </tr>
+                        ))}
+                        {!rows.length&&<tr><td colSpan={7}><div className="empty">No entries for this filter.</div></td></tr>}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+/* ---------------- EVALUATION ---------------- */
+function Evaluation({res,busy,run}){
+    if(!res&&!busy)return <div className="card"><Spinner/></div>;
+    if(!res&&busy)return <div className="card"><div className="empty"><div className="eico">◌</div>Running the 20-scenario guardrail suite…</div></div>;
+    if(res&&res.error)return <div className="card"><div className="empty">{res.error}<div style={{marginTop:10}}><button className="btn" onClick={run}>Retry</button></div></div></div>;
+    const passed=res.passed,total=res.total,failed=res.failed||0;
+    return(
+        <div>
+            <div className="card" style={{textAlign:'center',padding:'34px 22px',marginBottom:18}}>
+                <div className="k" style={{color:'var(--ink-3)'}}>Scenario Evaluation · guardrail regression suite</div>
+                <div style={{fontSize:52,fontWeight:700,letterSpacing:-1.5,marginTop:8}}><span style={{color:'var(--green)'}}>{passed}</span><span style={{color:'var(--ink-3)'}}>/{total}</span></div>
+                <div style={{fontSize:15,fontWeight:600,color:'var(--green)',marginTop:4}}>PASSED · {pct(passed,total)}%</div>
+                <div style={{marginTop:18}}><button className="btn primary" onClick={run} disabled={busy}>{busy?'Running…':'Rerun Evaluation'}</button></div>
+            </div>
+            <div className="hero-row" style={{gridTemplateColumns:'repeat(3,1fr)',marginTop:0}}>
+                <div className="card tight stat"><div className="k">Passed</div><div className="v accent-green">{passed}</div><div className="s">expected control behaviour matched</div></div>
+                <div className="card tight stat"><div className="k">Failed</div><div className="v accent-red">{failed}</div><div className="s">control-breach scenarios caught</div></div>
+                <div className="card tight stat"><div className="k">Scenarios</div><div className="v">{total}</div><div className="s">demo + chaos adversarial cases</div></div>
+            </div>
+            <div className="card" style={{padding:0,overflow:'hidden',marginTop:18}}>
+                <table>
+                    <thead><tr><th>Scenario</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+                    <tbody>
+                        {(res.results||[]).map((r,i)=>(
+                            <tr key={r.scenario_id||i} style={{cursor:'default'}}>
+                                <td style={{fontWeight:600}}>{r.scenario_id}</td>
+                                <td><span className="chip info">{r.expected_verdict}</span></td>
+                                <td><span className={r.pass?'chip info':'chip bad'}>{r.actual_verdict}</span></td>
+                                <td><span className={`chip ${r.pass?'ok':'bad'}`}>{r.pass?'✓ PASS':'✗ FAIL'}</span></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+/* ---------------- RECOVERY AI ---------------- */
+function RecoveryAi(){
+    const[info,setInfo]=useState(null);
+    const[feats,setFeats]=useState(null);
+    const[busy,setBusy]=useState(false);
+    const[result,setResult]=useState(null);
+    const[recent,setRecent]=useState([]);
+    const[err,setErr]=useState(null);
+    const[decF,setDecF]=useState({amount:850,payment_method:'apple_pay',decline_code:'generic_decline',retry_count:0});
+    const[decResult,setDecResult]=useState(null);
+    const[decBusy,setDecBusy]=useState(false);
+    const[decisions,setDecisions]=useState([]);
+    const[analytics,setAnalytics]=useState(null);
+    const[f,setF]=useState({transaction_id:'txn_pred_1',customer_id:'cust_pred_1',transaction_date:'2024-10-01 14:30:00',status:'refunded',payment_method:'credit_card',quantity:1,unit_price:1200,total_amount:1200,discount_applied:0,shipping_cost:0,customer_signup_date:'2023-03-01'});
+    const up=(k,v)=>setF(p=>({...p,[k]:v}));
+    const dup=(k,v)=>setDecF(p=>({...p,[k]:v}));
+
+    useEffect(()=>{
+        fetch(API+'/api/recovery/model-info').then(r=>r.json()).then(setInfo).catch(()=>setInfo(null));
+        fetch(API+'/api/recovery/features').then(r=>r.json()).then(setFeats).catch(()=>setFeats(null));
+        fetch(API+'/api/recovery/predictions').then(r=>r.json()).then(setRecent).catch(()=>[]);
+        fetch(API+'/api/recovery/outcomes').then(r=>r.json()).then(setDecisions).catch(()=>[]);
+        fetch(API+'/api/recovery/analytics').then(r=>r.json()).then(setAnalytics).catch(()=>setAnalytics(null));
+    },[]);
+
+    const runDecision=async(execute)=>{
+        const id='live_dec_'+(Date.now().toString(36));
+        const body={transaction_id:id,customer_id:'cust_live',amount:Number(decF.amount),payment_method:decF.payment_method,decline_code:decF.decline_code,retry_count:Number(decF.retry_count||0)};
+        setDecBusy(true);setDecResult(null);
+        try{
+            const r=await fetch(API+(execute?'/api/recovery/process':'/api/recovery/decision'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const j=await r.json();
+            if(!r.ok)setDecResult({error:j.detail||('HTTP '+r.status)});
+            else{setDecResult(j);fetch(API+'/api/recovery/outcomes').then(x=>x.json()).then(setDecisions).catch(()=>{});fetch(API+'/api/recovery/analytics').then(x=>x.json()).then(setAnalytics).catch(()=>{});}
+        }catch(e){setDecResult({error:String(e)});}
+        setDecBusy(false);
+    };
+
+    const score=async(warm)=>{
+        const body={...f,quantity:Number(f.quantity),unit_price:Number(f.unit_price),total_amount:Number(f.total_amount),discount_applied:Number(f.discount_applied),shipping_cost:Number(f.shipping_cost)};
+        if(warm)body.history=warm;
+        setBusy(true);setErr(null);setResult(null);
+        try{
+            const r=await fetch(API+'/api/recovery/predict',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const j=await r.json();
+            if(!r.ok)setErr(j.detail||('HTTP '+r.status));
+            else{setResult(j);fetch(API+'/api/recovery/predictions').then(x=>x.json()).then(setRecent).catch(()=>{});}
+        }catch(e){setErr(String(e));}
+        setBusy(false);
+    };
+
+    const riskChip=s=>s==='Very Low'||s==='Low'?<span className="chip ok">{s}</span>:
+        s==='Medium'?<span className="chip info">{s}</span>:
+        <span className="chip bad">{s}</span>;
+    const pci=p=>p<0.02?'var(--green)':p<0.04?'var(--blue)':p<0.075?'var(--amber)':'var(--red)';
+    const field=(k,label,type)=>(<div style={{flex:1,minWidth:150}}>
+        <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>{label}</div>
+        <input className="input" type={type||'text'} value={f[k]===undefined?'':f[k]} onChange={e=>up(k,e.target.value)}/>
+    </div>);
+    const grp=feats?feats.groups:null;
+
+    return(
+        <div>
+            <div className="grid2" style={{alignItems:'stretch'}}>
+                {/* PREDICT FORM */}
+                <div className="card">
+                    <H title="Score a transaction" sub="Refunded / cancelled / pending event — 44 raw features, leakage-safe."/>
+                    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            {field('transaction_id','Transaction ID')}
+                            {field('customer_id','Customer ID')}
+                        </div>
+                        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            {field('transaction_date','Transaction Date','datetime-local')}
+                            {field('customer_signup_date','Signup Date','datetime-local')}
+                        </div>
+                        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            <div style={{flex:1,minWidth:150}}>
+                                <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>Status</div>
+                                <select className="input" value={f.status} onChange={e=>up('status',e.target.value)}>
+                                    <option value="refunded">refunded</option>
+                                    <option value="cancelled">cancelled</option>
+                                    <option value="pending">pending</option>
+                                </select>
+                            </div>
+                            <div style={{flex:1,minWidth:150}}>
+                                <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>Payment Method</div>
+                                <select className="input" value={f.payment_method} onChange={e=>up('payment_method',e.target.value)}>
+                                    {['credit_card','debit_card','paypal','google_pay','apple_pay','bank_transfer','upi'].map(m=><option key={m} value={m}>{m}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            {field('quantity','Quantity','number')}
+                            {field('unit_price','Unit Price','number')}
+                            {field('total_amount','Total Amount','number')}
+                        </div>
+                        <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                            {field('discount_applied','Discount','number')}
+                            {field('shipping_cost','Shipping','number')}
+                        </div>
+                        <div className="btn-row" style={{marginTop:6}}>
+                            <button className="btn primary" onClick={()=>score()} disabled={busy}>{busy?'Scoring…':'Score Transaction'}</button>
+                            <span className="k" style={{color:'var(--ink-3)'}}>model loads once · frozen artifacts · no retraining</span>
+                        </div>
+                        {err&&<div className="answer" style={{borderColor:'#f2c8c8',background:'#fdf2f2',color:'var(--red)'}}><b>Error:</b> {err}</div>}
+                    </div>
+                </div>
+
+                {/* RESULT */}
+                <div className="card">
+                    <H title="Recovery Risk" sub="ML Frozen Model · Calibrated probability · threshold 0.04"/>
+                    {!result&&!busy&&<div className="empty"><div className="eico">◉</div>Score a transaction to see its recovery risk here.</div>}
+                    {busy&&!result&&<div className="empty"><div className="eico">◌</div>Running 44-feature pipeline → ExtraTrees → calibration…</div>}
+                    {result&&(
+                        <div>
+                            <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
+                                <div>
+                                    <div style={{fontSize:44,fontWeight:750,letterSpacing:-1,color:pci(result.recovery_probability),fontVariantNumeric:'tabular-nums'}}>{(result.recovery_probability*100).toFixed(2)}%</div>
+                                    <div className="k" style={{color:'var(--ink-3)'}}>ML model calibrated recovery probability</div>
+                                </div>
+                                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                                    <div>{riskChip(result.recovery_risk)} <span className="k" style={{marginLeft:6,color:'var(--ink-3)'}}>{result.risk_band} band</span></div>
+                                    <div>{result.recovery_prediction===1
+                                        ?<span className="chip info">Likely to recover</span>
+                                        :<span className="chip muted">Unlikely to recover</span>}
+                                        <span className="k" style={{marginLeft:6,color:'var(--ink-3)'}}>threshold {result.threshold}</span></div>
+                                    <div style={{fontSize:11,color:'var(--ink-3)'}}>raw {result.probability_raw} · {result.model} · {result.model_artifact}</div>
+                                </div>
+                            </div>
+                            <div style={{marginTop:16,paddingTop:14,borderTop:'1px dashed var(--border-strong)'}}>
+                                <div className="section-sub" style={{fontWeight:700}}>Top contributing features <span className="k" style={{color:'var(--ink-3)'}}>(impurity importance)</span></div>
+                                <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:8}}>
+                                    {(result.explanation||[]).map((x,i)=>(
+                                        <div className="cand-row" key={i} style={{padding:'7px 10px'}}>
+                                            <span className="mono" style={{color:'var(--accent)',fontWeight:600}}>{x.feature}</span>
+                                            <span className="spacer"></span>
+                                            <span className="mono" style={{color:'var(--ink-2)'}}>{typeof x.value==='number'?x.value.toLocaleString():String(x.value)}</span>
+                                            <span className="k" style={{color:'var(--ink-3)',minWidth:56,textAlign:'right'}}>{x.importance.toFixed(4)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* AI DECISION — closed loop: ML -> AI -> policy -> outcome */}
+            <div className="section">
+                    <H title="ML → AI Recovery Decision" sub="Trained Model (ML probability) → AI Decision → Deterministic Policy Engine → (simulated) execution. probability_source traced end-to-end."/>
+                <div className="grid2" style={{alignItems:'stretch'}}>
+                    <div className="card">
+                        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                            <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                                <div style={{flex:1,minWidth:150}}>
+                                    <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>Amount (₹)</div>
+                                    <input className="input" type="number" value={decF.amount} onChange={e=>dup('amount',e.target.value)}/>
+                                </div>
+                                <div style={{flex:1,minWidth:150}}>
+                                    <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>Payment Method</div>
+                                    <select className="input" value={decF.payment_method} onChange={e=>dup('payment_method',e.target.value)}>
+                                        {['credit_card','debit_card','paypal','google_pay','apple_pay','bank_transfer','upi'].map(m=><option key={m} value={m}>{m}</option>)}
+                                    </select>
+                                </div>
+                                <div style={{flex:1,minWidth:150}}>
+                                    <div style={{fontSize:11,fontWeight:700,color:'var(--ink-3)',letterSpacing:.4,textTransform:'uppercase',marginBottom:6}}>Decline Code</div>
+                                    <select className="input" value={decF.decline_code} onChange={e=>dup('decline_code',e.target.value)}>
+                                        {['generic_decline','insufficient_funds','bank_timeout','expired_card','incorrect_cvc','mandate_afa_required','do_not_honor','processing_error'].map(m=><option key={m} value={m}>{m}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="btn-row">
+                                <button className="btn primary" onClick={()=>runDecision(false)} disabled={decBusy}>{decBusy?'…':'Get AI Decision'}</button>
+                                <button className="btn" onClick={()=>runDecision(true)} disabled={decBusy}>{decBusy?'…':'Full Run (execute + record)'}</button>
+                                <span className="k" style={{color:'var(--ink-3)'}}>advisory mode does not execute · full run is simulation-labelled</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card">
+                        {!decResult&&!decBusy&&<div className="empty"><div className="eico">◉</div>Run the closed loop to see prediction → decision → verdict.</div>}
+                        {decBusy&&!decResult&&<div className="empty"><div className="eico">◌</div>ML bridge → optimizer → supervisor → policy engine…</div>}
+                        {decResult&&decResult.error&&<div className="answer" style={{borderColor:'#f2c8c8',background:'#fdf2f2',color:'var(--red)'}}><b>Error:</b> {decResult.error}</div>}
+                        {decResult&&!decResult.error&&(
+                            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                                <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                                    <div>
+                                        <div style={{fontSize:34,fontWeight:750,letterSpacing:-1,color:pci(decResult.recovery_probability),fontVariantNumeric:'tabular-nums'}}>{(decResult.recovery_probability*100).toFixed(2)}%</div>
+                                        <div className="k" style={{color:'var(--ink-3)'}}>ML Recovery Probability <span style={{color:'var(--ink-2)',fontWeight:600}}>· frozen model</span> <span className="chip muted" style={{marginLeft:6}}>threshold {decResult.threshold}</span></div>
+                                    </div>
+                                    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                                        <div style={{fontWeight:700,color:'var(--accent)',fontSize:15}}>{decResult.ai_decision}</div>
+                                        <div className="k" style={{color:'var(--ink-3)'}}>{decResult.action} · {decResult.channel}</div>
+                                    </div>
+                                </div>
+                                <div className="cand-row" style={{padding:'7px 10px'}}>
+                                    <span className="k" style={{color:'var(--ink-3)'}}>probability_source</span>
+                                    <span className="spacer"></span>
+                                    <span className="mono" style={{fontWeight:600}}>{decResult.probability_source}</span>
+                                </div>
+                                <div className="cand-row" style={{padding:'7px 10px'}}>
+                                    <span className="k" style={{color:'var(--ink-3)'}}>policy verdict</span>
+                                    <span className="spacer"></span>
+                                    <span className="mono" style={{fontWeight:600}}>{decResult.policy_verdict} <span className="chip muted" style={{marginLeft:8}}>{decResult.risk_label} · {decResult.risk_band}</span></span>
+                                </div>
+                                <div className="cand-row" style={{padding:'7px 10px',alignItems:'flex-start'}}>
+                                    <span className="k" style={{color:'var(--ink-3)'}}>reasoning</span>
+                                    <span className="spacer"></span>
+                                    <span className="mono" style={{color:'var(--ink-2)',textAlign:'right',fontSize:11}}>{(decResult.reasoning||[]).slice(0,6).join(' · ')}</span>
+                                </div>
+                                <div className="cand-row" style={{padding:'7px 10px'}}>
+                                    <span className="k" style={{color:'var(--ink-3)'}}>action_mode</span>
+                                    <span className="spacer"></span>
+                                    <span className="mono" style={{fontWeight:600}}>{decResult.action_mode} <span className="chip muted" style={{marginLeft:8}}>outcome {decResult.outcome}</span></span>
+                                </div>
+                                <div className="cand-row" style={{padding:'7px 10px'}}>
+                                    <span className="k" style={{color:'var(--ink-3)'}}>expected</span>
+                                    <span className="spacer"></span>
+                                    <span className="mono" style={{color:'var(--ink-2)',textAlign:'right',fontSize:11}}>{decResult.expected_outcome}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* CLOSED-LOOP OUTCOME LEDGER + ANALYTICS */}
+            <div className="section">
+                <H title="ML → AI → Outcome Ledger" sub="One row per transaction · ML P(source) → AI decision → Policy verdict → Action → Outcome · confirmed recovery only via trusted webhook."/>
+                <div className="card" style={{padding:0,overflowX:'auto'}}>
+                    <table>
+                        <thead><tr><th>Transaction</th><th>P Source</th><th>AI Decision</th><th>Policy</th><th>Action (mode)</th><th>Outcome</th><th>Recovered</th><th>Time</th></tr></thead>
+                        <tbody>
+                            {decisions.map((d,i)=>(
+                                <tr key={d.id||i}>
+                                    <td className="mono" style={{fontWeight:600}}>{d.transaction_id}</td>
+                                    <td className="mono" style={{color:'var(--ink-2)'}}>{String(d.probability_source).slice(0,40)}</td>
+                                    <td><span className="chip" style={{fontWeight:700}}>{d.ai_decision}</span></td>
+                                    <td>{d.policy_verdict==='ALLOW'?<span className="chip ok">ALLOW</span>:d.policy_verdict==='MODIFY'?<span className="chip info">MODIFY</span>:d.policy_verdict==='DENY'?<span className="chip bad">DENY</span>:<span className="chip muted">{d.policy_verdict||''}</span>}</td>
+                                    <td className="mono" style={{color:'var(--ink-2)'}}>{d.action} <span className="k">({d.action_mode})</span></td>
+                                    <td>{d.outcome==='recovered_72h'?<span className="chip ok">recovered</span>:<span className="chip info">{d.outcome}</span>}</td>
+                                    <td className="mono" style={{fontWeight:600,color:'var(--green)'}}>{(d.recovered_amount||0)}</td>
+                                    <td className="mono" style={{color:'var(--ink-3)'}}>{(d.decision_at||'').replace('T',' ').slice(0,19)}</td>
+                                </tr>
+                            ))}
+                            {!decisions.length&&<tr><td colSpan={8} style={{textAlign:'center',color:'var(--ink-3)'}}>No decisions yet — run the AI decision loop above.</td></tr>}
+                        </tbody>
+                    </table>
+                </div>
+                {analytics&&(
+                    <div className="hero-row" style={{marginTop:14}}>
+                        <div className="card tight stat"><div className="k">Decisions</div><div className="v" style={{fontSize:20}}>{analytics.total_decisions}</div><div className="s">recorded in closed loop</div></div>
+                        <div className="card tight stat"><div className="k">ML Sources</div><div className="v" style={{fontSize:20}}>{Object.keys(analytics.by_probability_source||{}).map(s=>s.includes('ml')?'ML':'RULE-BASED').join(' · ')}</div><div className="s">{(analytics.by_probability_source||{}).hasOwnProperty?Object.entries(analytics.by_probability_source||{}).map(([k,v])=>k+'='+v).join(' · '):''}</div></div>
+                        <div className="card tight stat"><div className="k">Outcomes</div><div className="v" style={{fontSize:20}}>{Object.values(analytics.by_outcome||{}).reduce((a,b)=>a+b,0)}</div><div className="s">{Object.entries(analytics.by_outcome||{}).map(([k,v])=>k+'='+v).join(' · ')}</div></div>
+                        <div className="card tight stat"><div className="k">Recovered</div><div className="v" style={{fontSize:20,color:'var(--green)'}}>₹{analytics.recovered_amount}</div><div className="s">{analytics.recovered_count} confirmed via webhook</div></div>
+                    </div>
+                )}
+            </div>
+
+            {/* MODEL INFO */}
+            <div className="section">
+                <H title="Model Information" sub="Frozen research artifacts → production serving (never refit)."/>
+                <div className="hero-row" style={{marginTop:0}}>
+                    <div className="card tight stat"><div className="k">Algorithm</div><div className="v" style={{fontSize:18}}>{info?info.model:'…'}</div><div className="s">{info?(info.estimators+' estimators · class_weight=balanced'):''}</div></div>
+                    <div className="card tight stat"><div className="k">Features</div><div className="v" style={{fontSize:18}}>{info?info.raw_features+` → `+info.encoded_features:'…'}</div><div className="s">44 raw → 49 encoded</div></div>
+                    <div className="card tight stat"><div className="k">Calibration</div><div className="v" style={{fontSize:18}}>Sigmoid</div><div className="s">fit on validation · monotone</div></div>
+                    <div className="card tight stat"><div className="k">Threshold</div><div className="v" style={{fontSize:18}}>{info?(info.threshold):'…'}</div><div className="s">{info?(info.threshold_artifact):''}</div></div>
+                </div>
+                {info&&info.test_metrics&&(
+                    <div className="card tight" style={{marginTop:14,display:'flex',gap:26,flexWrap:'wrap',alignItems:'center'}}>
+                        <span className="k" style={{color:'var(--ink-3)'}}>TEST PERFORMANCE</span>
+                        <span>ROC-AUC <b>{info.test_metrics.roc_auc}</b></span>
+                        <span>PR-AUC <b>{info.test_metrics.pr_auc}</b></span>
+                        <span>Brier <b>{info.test_metrics.brier}</b></span>
+                        <span>LogLoss <b>{info.test_metrics.logloss}</b></span>
+                        <span>P <b>{info.test_metrics.precision}</b></span>
+                        <span>R <b>{info.test_metrics.recall}</b></span>
+                        <span>F1 <b>{info.test_metrics.f1}</b></span>
+                        <span>Lift <b>{info.test_metrics.lift}x</b></span>
+                        <span className="k" style={{color:'var(--ink-3)'}}>Target: recovered_72h · base rate {(info.recovery_rate_training*100).toFixed(2)}%</span>
+                    </div>
+                )}
+            </div>
+
+            {/* FEATURE GROUPS */}
+            {feats&&(
+                <div className="section">
+                    <H title="Feature Pipeline" sub="44 raw features in exactly notebook order; payment_method one-hot → 49 encoded."/>
+                    <div className="grid3">
+                        {[['base',grp.base],['historical',grp.historical],['behavioral',grp.behavioral],['advanced',grp.advanced],['temporal',grp.temporal],['recovery_history',grp.recovery_history]].map(([g,list])=>(
+                            <div className="card tight" key={g}>
+                                <div style={{fontSize:11,fontWeight:700,color:'var(--accent)',letterSpacing:.5,textTransform:'uppercase',marginBottom:8}}>{g.replace('_',' ')} · {list.length} <span className="k" style={{color:'var(--ink-3)'}}>leakage-safe</span></div>
+                                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>{list.map(n=><span className="chip muted" key={n} style={{fontFamily:'ui-monospace,SFMono-Regular,Menlo,monospace',fontSize:10}}>{n}</span>)}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* RECENT PREDICTIONS */}
+            <div className="section">
+                <H title="Recent Predictions" sub="Persisted best-effort · score single transactions to build the list."/>
+                <div className="card" style={{padding:0,overflowX:'auto'}}>
+                    <table>
+                        <thead><tr><th>Transaction</th><th>Customer</th><th>ML Prob.</th><th>Risk</th><th>Prediction</th><th>Threshold</th><th>Time</th></tr></thead>
+                        <tbody>
+                            {recent.map((p,i)=>(
+                                <tr key={p.id||i} style={{cursor:'default'}}>
+                                    <td className="mono" style={{fontWeight:600}}>{p.transaction_id}</td>
+                                    <td className="mono" style={{color:'var(--ink-2)'}}>{p.customer_id}</td>
+                                    <td style={{fontWeight:700,color:pci(p.recovery_probability)}}>{(p.recovery_probability*100).toFixed(2)}%</td>
+                                    <td>{riskChip(p.recovery_risk)}</td>
+                                    <td>{p.recovery_prediction===1?<span className="chip info">Likely</span>:<span className="chip muted">Unlikely</span>}</td>
+                                    <td className="mono" style={{color:'var(--ink-3)'}}>{p.threshold}</td>
+                                    <td className="mono" style={{color:'var(--ink-3)'}}>{p.predicted_at?String(p.predicted_at).replace('T',' ').slice(0,19):''}</td>
+                                </tr>
+                            ))}
+                            {!recent.length&&<tr><td colSpan={7} style={{textAlign:'center',color:'var(--ink-3)'}}>No persisted predictions yet.</td></tr>}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ---------------- DRAWER ---------------- */
+function TransactionDrawer({drawer,close}){
+    useEffect(()=>{
+        const h=e=>e.key==='Escape'&&close();
+        window.addEventListener('keydown',h);
+        return()=>window.removeEventListener('keydown',h);
+    },[close]);
+
+    const ev=drawer.event;
+    const title=ev?TYPE_LABELS[ev.type]||ev.type:'Transaction';
+    const amount=ev?ev.amount:(drawer.amount||0);
+    const status=ev?ev.status:(drawer.status||'pending');
+    const auditRow=drawer.audit;
+    const pd=drawer.policy_decision;
+    const specialist=drawer.specialist_calls||drawer.stages||[];
+
+    const stages = drawer.stages || [];
+    const cand=stages.find(s=>s.type==='strategy.candidates_generated');
+    const rank=stages.find(s=>s.type==='strategy.ranked');
+    const policySse=stages.find(s=>s.type==='policy.evaluated');
+    const execSse=stages.find(s=>s.type==='payment.pending');
+    const confSse=drawer.stages.find(s=>s.type==='payment.confirmed');
+
+    const checks=pd&&pd.detailed_results?pd.detailed_results:[];
+    const verdict=pd?pd.verdict:(policySse&&policySse.payload&&policySse.payload.verdict);
+
+    const steps=buildSteps(drawer);
+    const dec=!drawer.loading&&!drawer.notFound?normTraceDecision(drawer):null;
+    const recoveredAmt=(confSse&&confSse.payload&&confSse.payload.amount)||(ev&&ev.recovered_amount)||(auditRow&&auditRow.recovered_amount)||0;
+    const isRecovered=recoveredAmt>0||status==='confirmed'||status==='success';
+    const isAwaiting=status==='pending'||status==='pending_webhook'||status==='processing';
+
+    return(
+        <>
+            <div className="drawer-backdrop" onClick={close}></div>
+            <div className="drawer">
+                <div className="drawer-head">
+                    <div>
+                        <div className="dt" style={{fontSize:10.5,color:'var(--ink-3)',fontWeight:700,letterSpacing:.6,textTransform:'uppercase'}}>Transaction Trace</div>
+                        <div style={{display:'flex',gap:10,alignItems:'center',marginTop:2}}>
+                            <span style={{fontWeight:700,fontSize:15}}>{title}</span>
+                            <StatusChip s={status}/>
+                        </div>
+                        <div className="dh-id">{drawer.id}</div>
+                        <div className="dh-amt">{fmt(amount)}</div>
+                    </div>
+                    <button className="drawer-close" onClick={close}>✕</button>
+                </div>
+                <div className="drawer-body">
+                    {drawer.loading&&<div className="empty"><div className="eico">◌</div>Loading decision trace…</div>}
+                    {drawer.notFound&&(
+                        <>
+                            <div className="empty">No persisted trace for this real-time transaction.</div>
+                            {drawer.stages&&drawer.stages.length>0&&<StepsList steps={drawer.stages} live/>}
+                        </>
+                    )}
+
+                    {!drawer.loading&&!drawer.notFound&&(
+                        <>
+                            {dec&&(
+                                <div className={`trace-banner ${isRecovered?'ok':(isAwaiting?'wait':'no')}`}>
+                                    {isRecovered
+                                        ?<span>✓ Trusted payment confirmation</span>
+                                        :(isAwaiting?'● Recovery executed — waiting for trusted confirmation'
+                                            :(status==='blocked'||status==='denied'?'✕ Policy blocked this attempt':'✕ No recovery claimed'))}
+                                    <span className="tb-r">{isRecovered?'+'+fmt(recoveredAmt||amount)+' RECOVERED':(isAwaiting?'Awaiting webhook':'—')}</span>
+                                </div>
+                            )}
+
+                            {dec&&(
+                                <div className="drawer-sec">
+                                    <h4>Why did we retry this?</h4>
+                                    <div className="why-box">
+                                        <div className="wh">Reasoning · explained</div>
+                                        The recovery agent retried this payment because it classified the failure as <b>{dec.diagnosis||'a recoverable decline'}</b>{dec.confidence!=null?` with ${Math.round(dec.confidence*100)}% confidence`:''} — a pattern where retry is safe. It then compared policy-eligible candidates and picked <b>{dec.action||'the best action'}</b>{dec.expected_value?` — the one with the highest expected recovery value (${fmt(dec.expected_value)})`:'. No amount is claimed unless a payment is confirmed.'} Every candidate had to clear <b>{checks.length||10} hard policy checks</b> before execution — nothing bypasses the gate.
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="drawer-sec"><h4>Decision Path</h4><StepsList steps={steps}/></div>
+
+                            {(cand||rank||pd||auditRow)&&(
+                                <div className="drawer-sec">
+                                    <h4>Recovery Optimizer</h4>
+                                    <div className="card tight" style={{boxShadow:'none'}}>
+                                        {cand&&cand.payload&&cand.payload.candidates&&cand.payload.candidates.length>0&&(
+                                            <>
+                                                <div className="k" style={{marginBottom:8,color:'var(--ink-3)'}}>{cand.payload.count||cand.payload.candidates.length} eligible recovery actions</div>
+                                                {cand.payload.candidates.map((c,i)=>(
+                                                    <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'7px 0'}}>
+                                                        <div style={{flex:1}}>
+                                                            <div style={{fontWeight:600,fontSize:13}}>{ACTION_LABELS[c.strategy]||c.strategy}
+                                                                {(rank&&rank.payload&&rank.payload.selected===c.strategy)&&<span className="chip ok" style={{marginLeft:8}}>BEST</span>}</div>
+                                                            <div style={{fontSize:11.5,color:'var(--ink-3)'}}>
+                                                                {Math.round((c.probability||0)*100)}% probability
+                                                                {c.empirical_attempts>0&&` · ${c.empirical_successes}/${c.empirical_attempts} historically recovered`}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{fontWeight:700}}>{fmt(c.expected_value)}</div>
+                                                    </div>
+                                                ))}
+                                            </>
+                                        )}
+                                        {(pd||auditRow)&&(
+                                            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:10,borderTop:'1px solid var(--border)'}}>
+                                                <div>
+                                                    <div className="k" style={{color:'var(--ink-3)'}}>Selected</div>
+                                                    <div style={{fontWeight:700,fontSize:15}}>{ACTION_LABELS[auditRow&&auditRow.action]||auditRow&&auditRow.action||(rank&&rank.payload&&rank.payload.selected)||'—'}</div>
+                                                </div>
+                                                <div className="right">
+                                                    <div className="k" style={{color:'var(--ink-3)'}}>Expected recovery</div>
+                                                    <div style={{fontWeight:700,fontSize:15,color:'var(--accent)'}}>{fmt(confSse&&confSse.payload?confSse.payload.amount:(ev?ev.recovered_amount:0))}</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="k" style={{color:'var(--ink-3)',marginTop:10}}>{rank&&rank.payload&&rank.payload.reason||pd&&pd.reason||(auditRow?'Highest expected recovery value among policy-eligible actions.':'')}</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="drawer-sec"><h4>Policy</h4>
+                                <div className={`verdict-box ${verdict?String(verdict).toLowerCase():'allow'}`}>
+                                    <div style={{display:'flex',alignItems:'center',gap:10}}>
+                                        <span className={`chip ${verdict==='ALLOW'?'ok':verdict==='DENY'?'bad':verdict==='MODIFY'?'warn':verdict==='HUMAN_REVIEW'?'warn':'ok'}`}>{verdict||'ALLOW'}</span>
+                                        <span style={{fontSize:12.5,color:'var(--ink-2)'}}>{pd&&pd.reason||(policySse&&policySse.payload&&policySse.payload.reason)||''}</span>
+                                    </div>
+                                    {(checks.length>0||(pd&&pd.checks_failed&&pd.checks_failed.length))&&(
+                                        <div style={{marginTop:12}}>
+                                            {checks.map((c,i)=>(
+                                                <div className="check-row" key={i}>
+                                                    <span className={`check-mark ${c.result==='PASS'?'pass':'fail'}`}>{c.result==='PASS'?'✓':'✗'}</span>
+                                                    <span className="check-rule">{c.rule}</span>
+                                                    <span className="check-exp" style={{flex:1}}>{c.explanation}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {(ev||auditRow)&&(
+                                        <div style={{marginTop:12,paddingTop:10,borderTop:'1px solid var(--border)',fontSize:12.5,color:'var(--ink-2)'}}>
+                                            Execution: <b>{(()=>{const er=auditRow&&auditRow.execution_result?kv(auditRow.execution_result):null;return (er&&er.result)||(ev?'executed':'')})()}</b>
+                                            {ev&&ev.recovered_amount>0&&<span style={{color:'var(--green)',fontWeight:700}}> · recovered {fmt(ev.recovered_amount)}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {(specialist&&specialist.length>0)&&(
+                                <div className="drawer-sec"><h4>Agent Trace</h4>
+                                    <AgentTrace items={auditRow?specialist:specialist}/>
+                                </div>
+                            )}
+
+                            {drawer.risk_flags&&drawer.risk_flags.length>0&&(
+                                <div className="drawer-sec">
+                                    <h4>Risk Flags</h4>
+                                    {drawer.risk_flags.map((rf,i)=>(
+                                        <div style={{display:'flex',gap:10,alignItems:'center',padding:'6px 0'}} key={i}>
+                                            <span className={`chip ${rf.severity==='CRITICAL'||rf.severity==='HIGH'?'bad':'warn'}`}>{rf.code}</span>
+                                            <span style={{fontSize:12.5,color:'var(--ink-2)'}}>{rf.message}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </>
+    );
+}
+
+function buildSteps(drawer){
+    const ev=drawer.event;
+    const out=[];
+    const push=(label,state,detail)=>out.push({label,state,detail});
+    if(drawer.stages&&drawer.stages.length>0){
+        // Real-time closed-loop: derive from SSE stage stream.
+        const S=drawer.stages;
+        const probe=(...types)=>S.find(s=>types.includes(s.type));
+        const chk=(t)=>S.some(s=>s.type===t);
+        const dpl=t=>{const s=probe(t);return s&&s.payload?s.payload:{}};
+        push('Received','done','webhook ingress · HMAC verified');
+        const diag=dpl('diagnosis.completed');
+        push('Diagnosed',chk('diagnosis.completed')?'done':'wait',`${diag.classification||''} · ${diag.action_family||''}`.trim());
+        push('Customer context loaded',chk('customer_context.completed')?'done':'wait','');
+        const ranked=probe('strategy.ranked');
+        push('Recovery optimized',chk('strategy.ranked')?'done':'wait',ranked&&ranked.payload?`elected ${ranked.payload.selected}`:'');
+        const pol=probe('policy.evaluated');
+        push('Policy evaluated',pol?(pol.payload&&pol.payload.verdict==='ALLOW'?'done':'fail'):'wait',pol&&pol.payload?`${pol.payload.verdict}${pol.payload.candidates_considered!=null?' · '+pol.payload.candidates_considered+' candidates before policy':''}`:'');
+        if(chk('payment.confirmed'))push('Payment confirmed','done',`${fmt((probe('payment.confirmed').payload||{}).amount||0)} confirmed`);
+        else if(chk('payment.pending'))push('Awaiting confirmation','wait','executed — waiting for trusted webhook confirmation');
+        else if(chk('payment.failed'))push('Payment failed','fail','attempt failed — re-optimizing');
+        else if(chk('recovery.blocked'))push('Blocked','fail',(probe('recovery.blocked').payload||{}).reason||'blocked by policy');
+        else if(chk('human_review.required'))push('Human review','fail',(probe('human_review.required').payload||{}).reason||'escalated for human approval');
+        return out;
+    }
+    if(!ev)return out;
+    push('Received','done','');
+    push('Diagnosed',ev.root_cause?'done':'wait',ev.root_cause||'');
+    push('Customer context loaded','wait','');
+    push('Recovery optimized','wait','');
+    const auditRow=drawer.audit;
+    const verdict=drawer.policy_decision&&drawer.policy_decision.verdict;
+    push('Policy evaluated',verdict?(verdict==='ALLOW'?'done':'fail'):'wait',verdict||'');
+    if(ev.status==='success')push('Payment confirmed','done',`recovered ${fmt(ev.recovered_amount)}`);
+    else if(ev.status==='pending_webhook'||ev.status==='pending')push('Awaiting confirmation','wait','');
+    else if(ev.status==='blocked')push('Blocked','fail',(drawer.policy_decision&&drawer.policy_decision.reason)||'blocked by policy');
+    else if(ev.status==='human_review')push('Human review','fail','');
+    else push('Processed','done',ev.status||'');
+    return out;
+}
+
+function StepsList({steps,live}){
+    return(
+        <div>
+            {steps.length===0&&<div className="empty">No steps recorded for this event.</div>}
+            {steps.map((s,i)=>(
+                <div className="step-row" key={i}>
+                    <div className={`step-ico ${s.state==='done'?'done':s.state==='fail'?'fail':s.state==='active'?'active':'wait'}`}>
+                        {s.state==='done'?'✓':s.state==='fail'?'×':live?(s.type||'').includes('payment')?'◷':'●':i+1}
+                    </div>
+                    <div className="step-body">
+                        <div className="step-title">{live?(s.type||s.label||'').replace(/\./g,' '):s.label}</div>
+                        <div className="step-detail">{live?s.detail||stageDetail(s):s.detail}</div>
+                    </div>
+                    {s.timestamp&&<div className="step-time">{timeOf(s.timestamp)}</div>}
+                </div>
+            ))}
+        </div>
+    );
+}
+function stageDetail(s){
+    const p=s.payload||{};
+    if(s.type==='policy.evaluated')return `${p.verdict||''}${p.reason?' · '+p.reason:''}`;
+    if(s.type==='diagnosis.completed')return `${p.classification||''} · ${p.action_family||''}`;
+    if(s.type==='strategy.ranked')return `elected ${p.selected||''}${p.reason?' · '+p.reason:''}`;
+    if(s.type==='strategy.candidates_generated')return p.count!=null?`${p.count} candidates`:'';
+    if(s.type==='payment.confirmed')return `confirmed ${fmt(p.amount)}`;
+    if(s.type==='recovery.blocked'||s.type==='human_review.required')return p.reason||'';
+    if(s.type==='execution.completed')return p.result||'';
+    return '';
+}
+
+function AgentTrace({items}){
+    const[open,setOpen]=useState(0);
+    return(
+        <div>
+            {(items||[]).map((sc,i)=>{
+                const name=sc.agent||sc.type||'agent';
+                const openState=open===i||(open===0&&i===0&&items.length===1);
+                return(
+                    <div className="accordion" key={i}>
+                        <div className="accordion-head" onClick={()=>setOpen(open===i?-1:i)}>
+                            <span className={`check-mark ${i<items.length-1?'pass':'wait'}`}>{sc.output_summary?'✓':'·'}</span>
+                            <span style={{textTransform:'capitalize'}}>{name.replace(/_/g,' ')}</span>
+                            <span style={{marginLeft:'auto',color:'var(--ink-3)',fontSize:12}}>{openState?'−':'+'}</span>
+                        </div>
+                        {openState&&(
+                            <div className="accordion-body">
+                                {sc.input_summary&&<div style={{marginBottom:6}}><b style={{color:'var(--ink-3)'}}>IN</b> <span className="mono" style={{fontSize:11.5}}>{sc.input_summary}</span></div>}
+                                {sc.output_summary&&<div><b style={{color:'var(--ink-3)'}}>OUT</b> <span className="mono" style={{fontSize:11.5}}>{sc.output_summary}</span></div>}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
